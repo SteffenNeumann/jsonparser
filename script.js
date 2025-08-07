@@ -877,8 +877,11 @@ class JSONVisualizer {
 		// Upload-Bereich zurück zum normalen Zustand
 		const uploadArea = document.getElementById("uploadArea");
 		const uploadSection = document.querySelector(".upload-section");
+		const header = document.querySelector("header");
+
 		uploadArea.classList.remove("compact");
 		uploadSection.classList.remove("compact");
+		header.classList.remove("compact");
 
 		document.getElementById("fileInput").value = "";
 		document.getElementById("searchInput").value = "";
@@ -900,8 +903,11 @@ class JSONVisualizer {
 		// Upload-Bereich kompakt machen
 		const uploadArea = document.getElementById("uploadArea");
 		const uploadSection = document.querySelector(".upload-section");
+		const header = document.querySelector("header");
+
 		uploadArea.classList.add("compact");
 		uploadSection.classList.add("compact");
+		header.classList.add("compact");
 
 		document.getElementById("dashboardSection").style.display = "block";
 		document.getElementById("controlsSection").style.display = "block";
@@ -913,7 +919,6 @@ class JSONVisualizer {
 			behavior: "smooth",
 		});
 	}
-
 	showError(message) {
 		document.getElementById("errorText").textContent = message;
 		document.getElementById("errorSection").style.display = "block";
