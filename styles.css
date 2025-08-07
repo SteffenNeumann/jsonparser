@@ -253,9 +253,18 @@ header.compact p {
 
 .controls {
 	display: grid;
-	grid-template-columns: 280px 1fr auto;
+	grid-template-columns: 280px 1fr;
 	gap: 16px;
-	align-items: center;
+	align-items: start;
+	margin-bottom: 16px;
+}
+
+.controls-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding-top: 8px;
+	border-top: 1px solid var(--border-light);
 }
 
 .search-container {
@@ -321,12 +330,12 @@ header.compact p {
 	color: var(--text-light);
 }
 
-/* Button Area - Kompakte Buttons */
+/* Button Area - Kompakte Buttons unterhalb Filter */
 .action-buttons {
 	display: flex;
 	gap: 8px;
 	align-items: center;
-	justify-self: end;
+	flex-wrap: wrap;
 }
 
 .btn {
@@ -679,7 +688,7 @@ th i {
 }
 
 th:hover i {
-	color: var(--primary-orange);
+	color: var(--secondary-gray);
 }
 
 td {
@@ -693,7 +702,7 @@ td {
 
 /* Datentyp-spezifische Zellenformatierung */
 .data-number {
-	color: var(--primary-orange);
+	color: var(--secondary-gray);
 	font-weight: 600;
 	text-align: right;
 	font-family: "Monaco", "Menlo", "Consolas", monospace;
@@ -704,7 +713,7 @@ td {
 }
 
 .data-date {
-	color: var(--secondary-gray);
+	color: var(--text-medium);
 	font-family: "Monaco", "Menlo", "Consolas", monospace;
 	font-size: 0.75rem;
 }
@@ -733,7 +742,7 @@ td {
 }
 
 .data-array {
-	color: var(--primary-orange);
+	color: var(--text-medium);
 	font-family: "Monaco", "Menlo", "Consolas", monospace;
 	font-size: 0.75rem;
 	max-width: 200px;
@@ -748,11 +757,11 @@ tbody tr {
 }
 
 tbody tr:hover {
-	background-color: var(--primary-orange-light);
+	background-color: var(--secondary-gray-light);
 }
 
 tbody tr:hover td {
-	background-color: var(--primary-orange-light);
+	background-color: var(--secondary-gray-light);
 }
 
 tbody tr:nth-child(even) {
@@ -760,11 +769,11 @@ tbody tr:nth-child(even) {
 }
 
 tbody tr:nth-child(even):hover {
-	background-color: var(--primary-orange-light);
+	background-color: var(--secondary-gray-light);
 }
 
 tbody tr:nth-child(even):hover td {
-	background-color: var(--primary-orange-light);
+	background-color: var(--secondary-gray-light);
 }
 
 /* Error Section */
@@ -800,6 +809,7 @@ tbody tr:nth-child(even):hover td {
 	.controls {
 		grid-template-columns: 1fr;
 		gap: 12px;
+		margin-bottom: 12px;
 	}
 
 	.filter-container {
@@ -807,8 +817,13 @@ tbody tr:nth-child(even):hover td {
 		gap: 8px;
 	}
 
+	.controls-buttons {
+		padding-top: 12px;
+		justify-content: center;
+	}
+
 	.action-buttons {
-		justify-content: flex-start;
+		justify-content: center;
 	}
 }
 
@@ -867,9 +882,20 @@ tbody tr:nth-child(even):hover td {
 		gap: 6px;
 	}
 
+	.controls-buttons {
+		padding-top: 8px;
+		justify-content: center;
+	}
+
 	.action-buttons {
 		flex-direction: column;
 		gap: 6px;
+		width: 100%;
+	}
+
+	.action-buttons .btn {
+		width: 100%;
+		justify-content: center;
 	}
 
 	.column-manager-header {
@@ -1010,22 +1036,22 @@ tbody tr:nth-child(even):hover td {
 }
 
 .table-container::-webkit-scrollbar-thumb {
-	background: var(--primary-blue);
+	background: var(--secondary-gray);
 	border-radius: 3px;
 }
 
 .table-container::-webkit-scrollbar-thumb:hover {
-	background: var(--primary-blue-hover);
+	background: var(--secondary-gray-hover);
 }
 
 /* Sort Icons Enhancement */
 .fas.fa-sort-up {
-	color: var(--primary-blue) !important;
+	color: var(--secondary-gray) !important;
 	opacity: 1 !important;
 }
 
 .fas.fa-sort-down {
-	color: var(--primary-blue) !important;
+	color: var(--secondary-gray) !important;
 	opacity: 1 !important;
 }
 
@@ -1039,12 +1065,12 @@ tbody tr:nth-child(even):hover td {
 button:focus,
 input:focus,
 select:focus {
-	outline: 2px solid var(--primary-blue);
+	outline: 2px solid var(--primary-orange);
 	outline-offset: 2px;
 }
 
 /* Hover Enhancements */
 .upload-area:focus-within {
-	border-color: var(--primary-blue);
-	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+	border-color: var(--primary-orange);
+	box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
