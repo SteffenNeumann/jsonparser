@@ -306,6 +306,7 @@ header.compact p {
 	grid-template-columns: 150px 120px 1fr 1fr;
 	gap: 12px;
 	align-items: center;
+	justify-items: stretch;
 }
 
 .filter-container select,
@@ -336,6 +337,7 @@ header.compact p {
 	gap: 8px;
 	align-items: center;
 	flex-wrap: wrap;
+	justify-content: flex-end;
 }
 
 .btn {
@@ -815,15 +817,17 @@ tbody tr:nth-child(even):hover td {
 	.filter-container {
 		grid-template-columns: 1fr 1fr;
 		gap: 8px;
+		justify-items: stretch;
 	}
 
 	.controls-buttons {
 		padding-top: 12px;
-		justify-content: center;
+		justify-content: flex-end;
 	}
 
 	.action-buttons {
-		justify-content: center;
+		justify-content: flex-end;
+		flex-wrap: wrap;
 	}
 }
 
@@ -880,22 +884,24 @@ tbody tr:nth-child(even):hover td {
 	.filter-container {
 		grid-template-columns: 1fr;
 		gap: 6px;
+		justify-items: stretch;
 	}
 
 	.controls-buttons {
 		padding-top: 8px;
-		justify-content: center;
+		justify-content: flex-end;
 	}
 
 	.action-buttons {
-		flex-direction: column;
+		flex-direction: row;
 		gap: 6px;
-		width: 100%;
+		justify-content: flex-end;
+		flex-wrap: wrap;
 	}
 
 	.action-buttons .btn {
-		width: 100%;
-		justify-content: center;
+		flex: 0 0 auto;
+		min-width: 120px;
 	}
 
 	.column-manager-header {
@@ -1000,6 +1006,24 @@ tbody tr:nth-child(even):hover td {
 	.upload-area.compact .upload-btn {
 		padding: 6px 12px !important;
 		font-size: 0.75rem !important;
+	}
+
+	/* Mobile Button Layout */
+	.controls-buttons {
+		justify-content: center;
+	}
+
+	.action-buttons {
+		flex-direction: column;
+		gap: 8px;
+		width: 100%;
+		align-items: center;
+	}
+
+	.action-buttons .btn {
+		width: 100%;
+		max-width: 280px;
+		justify-content: center;
 	}
 }
 

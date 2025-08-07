@@ -1052,19 +1052,40 @@ class JSONVisualizer {
 			return "number";
 		}
 
-		// Date Check
+		// DateTime/Date Check (erweitert)
 		if (typeof value === "string") {
-			// Common date patterns
-			const datePatterns = [
-				/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
-				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/, // ISO format
-				/^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY
-				/^\d{2}\.\d{2}\.\d{4}$/, // DD.MM.YYYY
+			// Erweiterte Datums- und Zeit-Pattern
+			const dateTimePatterns = [
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // ISO DateTime (mit oder ohne Z/Timezone)
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/, // YYYY-MM-DD HH:MM:SS
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/, // YYYY-MM-DD HH:MM
+				/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/, // MM/DD/YYYY HH:MM
+				/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/, // DD.MM.YYYY HH:MM
+				/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (nur Datum)
+				/^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY (nur Datum)
+				/^\d{2}\.\d{2}\.\d{4}$/, // DD.MM.YYYY (nur Datum)
+				/^\d{2}:\d{2}:\d{2}$/, // HH:MM:SS (nur Zeit)
+				/^\d{2}:\d{2}$/, // HH:MM (nur Zeit)
 			];
 
-			if (datePatterns.some((pattern) => pattern.test(value))) {
+			if (dateTimePatterns.some((pattern) => pattern.test(value))) {
 				const date = new Date(value);
 				if (!isNaN(date.getTime())) {
+					return "date";
+				}
+			}
+
+			// Zusätzlicher Check für Unix Timestamps
+			if (/^\d{10}$/.test(value) || /^\d{13}$/.test(value)) {
+				const timestamp = parseInt(value);
+				const date = new Date(
+					/^\d{10}$/.test(value) ? timestamp * 1000 : timestamp
+				);
+				if (
+					!isNaN(date.getTime()) &&
+					date.getFullYear() > 1970 &&
+					date.getFullYear() < 2100
+				) {
 					return "date";
 				}
 			}
@@ -1090,12 +1111,52 @@ class JSONVisualizer {
 				return boolValue ? "✓ True" : "✗ False";
 
 			case "date":
-				const date = new Date(value);
-				return date.toLocaleDateString("de-DE", {
-					year: "numeric",
-					month: "2-digit",
-					day: "2-digit",
-				});
+				// Verbesserte Datums- und Uhrzeitformatierung
+				let date;
+
+				// Unix Timestamp Check
+				if (
+					typeof value === "string" &&
+					(/^\d{10}$/.test(value) || /^\d{13}$/.test(value))
+				) {
+					const timestamp = parseInt(value);
+					date = new Date(
+						/^\d{10}$/.test(value) ? timestamp * 1000 : timestamp
+					);
+				} else {
+					date = new Date(value);
+				}
+
+				if (isNaN(date.getTime())) {
+					return value; // Fallback zu Originalwert
+				}
+
+				// Prüfe ob Uhrzeit enthalten ist
+				const hasTime =
+					typeof value === "string" &&
+					(value.includes("T") ||
+						value.includes(" ") ||
+						/^\d{2}:\d{2}/.test(value) ||
+						/^\d{10,13}$/.test(value)); // Unix timestamps haben immer Zeit
+
+				if (hasTime) {
+					// Datum und Uhrzeit anzeigen
+					return date.toLocaleString("de-DE", {
+						year: "numeric",
+						month: "2-digit",
+						day: "2-digit",
+						hour: "2-digit",
+						minute: "2-digit",
+						second: "2-digit",
+					});
+				} else {
+					// Nur Datum anzeigen
+					return date.toLocaleDateString("de-DE", {
+						year: "numeric",
+						month: "2-digit",
+						day: "2-digit",
+					});
+				}
 
 			case "array":
 				// Truncate long arrays for display
