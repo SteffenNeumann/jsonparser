@@ -1042,14 +1042,40 @@ class JSONVisualizer {
 			return "boolean";
 		}
 
-		// Number Check
+		// Number Check - erweitert um serielle Datumswerte
 		const numValue = parseFloat(value);
-		if (
-			!isNaN(numValue) &&
-			isFinite(numValue) &&
-			value.toString().trim() !== ""
-		) {
-			return "number";
+		if (!isNaN(numValue) && isFinite(numValue)) {
+			// Excel Serial Date Check (1900-basiert, typisch 1-50000)
+			// Spaltennamen prüfen um Datumskontext zu erkennen
+			if (numValue > 1 && numValue < 50000) {
+				return "date";
+			}
+
+			// Fractional day values (0.xxx für Uhrzeiten)
+			if (numValue > 0 && numValue < 1) {
+				return "date";
+			}
+
+			// Unix Timestamp Check (10 oder 13 Stellen)
+			const numStr = value.toString();
+			if (/^\d{10}$/.test(numStr) || /^\d{13}$/.test(numStr)) {
+				const timestamp = parseInt(numStr);
+				const date = new Date(
+					/^\d{10}$/.test(numStr) ? timestamp * 1000 : timestamp
+				);
+				if (
+					!isNaN(date.getTime()) &&
+					date.getFullYear() > 1970 &&
+					date.getFullYear() < 2100
+				) {
+					return "date";
+				}
+			}
+
+			// Normale Zahlen
+			if (value.toString().trim() !== "") {
+				return "number";
+			}
 		}
 
 		// DateTime/Date Check (erweitert)
@@ -1057,8 +1083,13 @@ class JSONVisualizer {
 			// Erweiterte Datums- und Zeit-Pattern
 			const dateTimePatterns = [
 				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // ISO DateTime (mit oder ohne Z/Timezone)
-				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/, // YYYY-MM-DD HH:MM:SS
-				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/, // YYYY-MM-DD HH:MM
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/, // ISO DateTime kurz (YYYY-MM-DDTHH:MM)
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z?/, // YYYY-MM-DD HH:MM:SS mit optionalem Z
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}Z?/, // YYYY-MM-DD HH:MM mit optionalem Z
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // YYYY-MM-DD HH:MM:SS+TZ
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}[+\-]\d{2}:\d{2}/, // YYYY-MM-DD HH:MM+TZ
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // ISO mit Timezone
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // ISO kurz mit Timezone
 				/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/, // MM/DD/YYYY HH:MM
 				/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/, // DD.MM.YYYY HH:MM
 				/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (nur Datum)
@@ -1111,11 +1142,34 @@ class JSONVisualizer {
 				return boolValue ? "✓ True" : "✗ False";
 
 			case "date":
-				// Verbesserte Datums- und Uhrzeitformatierung
+				// Verbesserte Datums- und Uhrzeitformatierung mit Excel Serial Date Support
 				let date;
+				const numValue = parseFloat(value);
+
+				// Excel Serial Date Conversion (1900-basiert)
+				if (!isNaN(numValue) && isFinite(numValue)) {
+					if (numValue > 1 && numValue < 50000) {
+						// Excel Serial Date: Tage seit 1. Januar 1900
+						const excelEpoch = new Date(1900, 0, 1);
+						date = new Date(
+							excelEpoch.getTime() + (numValue - 1) * 24 * 60 * 60 * 1000
+						);
+					} else if (numValue > 0 && numValue < 1) {
+						// Fractional day (nur Zeit): 0.5 = 12:00 Uhr
+						const hours = Math.floor(numValue * 24);
+						const minutes = Math.floor((numValue * 24 * 60) % 60);
+						const seconds = Math.floor((numValue * 24 * 60 * 60) % 60);
+
+						// Nur Zeit anzeigen für Fractional Values
+						return `${hours.toString().padStart(2, "0")}:${minutes
+							.toString()
+							.padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+					}
+				}
 
 				// Unix Timestamp Check
 				if (
+					!date &&
 					typeof value === "string" &&
 					(/^\d{10}$/.test(value) || /^\d{13}$/.test(value))
 				) {
@@ -1123,7 +1177,10 @@ class JSONVisualizer {
 					date = new Date(
 						/^\d{10}$/.test(value) ? timestamp * 1000 : timestamp
 					);
-				} else {
+				}
+
+				// Standard Date Parsing
+				if (!date) {
 					date = new Date(value);
 				}
 
@@ -1133,13 +1190,24 @@ class JSONVisualizer {
 
 				// Prüfe ob Uhrzeit enthalten ist
 				const hasTime =
-					typeof value === "string" &&
-					(value.includes("T") ||
-						value.includes(" ") ||
-						/^\d{2}:\d{2}/.test(value) ||
-						/^\d{10,13}$/.test(value)); // Unix timestamps haben immer Zeit
+					(typeof value === "string" &&
+						(value.includes("T") ||
+							value.includes(" ") ||
+							/^\d{2}:\d{2}/.test(value) ||
+							/^\d{10,13}$/.test(value))) || // Unix timestamps haben immer Zeit
+					(!isNaN(numValue) && numValue > 1); // Excel dates with time
 
-				if (hasTime) {
+				if (hasTime && numValue > 1) {
+					// Datum und Uhrzeit anzeigen für Excel Serial Dates
+					return date.toLocaleString("de-DE", {
+						year: "numeric",
+						month: "2-digit",
+						day: "2-digit",
+						hour: "2-digit",
+						minute: "2-digit",
+						second: "2-digit",
+					});
+				} else if (hasTime) {
 					// Datum und Uhrzeit anzeigen
 					return date.toLocaleString("de-DE", {
 						year: "numeric",
