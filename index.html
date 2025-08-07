@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON File Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-table"></i> JSON File Visualizer</h1>
+            <p>Visualisieren Sie JSON-Dateien als interaktive Tabellen</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>JSON-Datei hochladen</h3>
+                <p>Ziehen Sie eine JSON-Datei hierher oder klicken Sie zum Auswählen</p>
+                <input type="file" id="fileInput" accept=".json" hidden>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i> Datei auswählen
+                </button>
+            </div>
+        </div>
+
+        <div class="controls-section" id="controlsSection" style="display: none;">
+            <div class="controls">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Suchen Sie in allen Spalten...">
+                </div>
+                
+                <div class="filter-container">
+                    <select id="columnFilter">
+                        <option value="">Alle Spalten</option>
+                    </select>
+                    <input type="text" id="columnSearchInput" placeholder="Spaltenfilter...">
+                </div>
+
+                <div class="action-buttons">
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> CSV Export
+                    </button>
+                    <button id="clearBtn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Zurücksetzen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section" id="tableSection" style="display: none;">
+            <div class="table-info">
+                <span id="recordCount"></span>
+                <span id="fileName"></span>
+            </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="error-section" id="errorSection" style="display: none;">
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Fehler beim Laden der Datei</h3>
+                <p id="errorText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
