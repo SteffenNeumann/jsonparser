@@ -1287,17 +1287,7 @@ class JSONVisualizer {
 			return "boolean";
 		}
 
-		// Number Check
-		const numValue = parseFloat(value);
-		if (
-			!isNaN(numValue) &&
-			isFinite(numValue) &&
-			value.toString().trim() !== ""
-		) {
-			return "number";
-		}
-
-		// Date Check - erweiterte Patterns für bessere Erkennung
+		// Date Check ZUERST - vor Number Check!
 		if (typeof value === "string") {
 			// ISO datetime patterns mit Zeitzonen
 			const datePatterns = [
@@ -1314,6 +1304,16 @@ class JSONVisualizer {
 			}
 		}
 
+		// Number Check - nach Date Check!
+		const numValue = parseFloat(value);
+		if (
+			!isNaN(numValue) &&
+			isFinite(numValue) &&
+			value.toString().trim() !== ""
+		) {
+			return "number";
+		}
+
 		// Default to string
 		return "string";
 	}
@@ -1322,6 +1322,10 @@ class JSONVisualizer {
 		switch (dataType) {
 			case "number":
 				const num = parseFloat(value);
+				// Spezielle Behandlung für 4-stellige Zahlen (wahrscheinlich Jahre)
+				if (num % 1 === 0 && num >= 1000 && num <= 9999) {
+					return num.toString(); // Keine Lokalisierung für Jahre
+				}
 				// Format numbers with appropriate decimal places
 				if (num % 1 === 0) {
 					return num.toLocaleString(); // Integer formatting
