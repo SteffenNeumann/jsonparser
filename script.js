@@ -17,6 +17,8 @@ class JSONVisualizer {
 	}
 
 	setupEventListeners() {
+		console.log("Setting up event listeners...");
+
 		// File Input Event
 		document.getElementById("fileInput").addEventListener("change", (e) => {
 			this.handleFileSelect(e.target.files[0]);
@@ -71,6 +73,7 @@ class JSONVisualizer {
 		document
 			.getElementById("columnManagerBtn")
 			.addEventListener("click", () => {
+				console.log("Column Manager Button clicked!");
 				this.toggleColumnManager();
 			});
 
@@ -78,6 +81,7 @@ class JSONVisualizer {
 		document
 			.getElementById("structureDiagramBtn")
 			.addEventListener("click", () => {
+				console.log("Structure Diagram Button clicked!");
 				this.toggleStructureDiagram();
 			});
 
@@ -467,10 +471,26 @@ class JSONVisualizer {
 	}
 
 	createColumnManager() {
+		console.log("createColumnManager called");
+		console.log("columnOrder:", this.columnOrder);
+		console.log(
+			"columnOrder length:",
+			this.columnOrder ? this.columnOrder.length : 0
+		);
+
 		const columnList = document.getElementById("columnList");
+		console.log("columnList found:", columnList);
 		columnList.innerHTML = "";
 
+		if (!this.columnOrder || this.columnOrder.length === 0) {
+			console.log("No columns available, adding placeholder");
+			columnList.innerHTML =
+				"<p>Keine Spalten verfügbar. Bitte laden Sie zuerst eine JSON-Datei.</p>";
+			return;
+		}
+
 		this.columnOrder.forEach((column, index) => {
+			console.log("Creating column item for:", column);
 			const columnItem = this.createColumnItem(column, index);
 			columnList.appendChild(columnItem);
 		});
@@ -680,15 +700,76 @@ class JSONVisualizer {
 	}
 
 	toggleColumnManager() {
+		console.log("toggleColumnManager called");
 		const columnManagerSection = document.getElementById(
 			"columnManagerSection"
 		);
-		const isVisible = columnManagerSection.style.display !== "none";
+		console.log("columnManagerSection found:", columnManagerSection);
+
+		if (!columnManagerSection) {
+			console.error("Column Manager Section not found!");
+			return;
+		}
+
+		// Verbesserte Sichtbarkeitsprüfung
+		const computedStyle = window.getComputedStyle(columnManagerSection);
+		const isVisible = computedStyle.display !== "none";
+		console.log("Current display style:", columnManagerSection.style.display);
+		console.log("Computed display style:", computedStyle.display);
+		console.log("isVisible:", isVisible);
 
 		if (isVisible) {
+			console.log("Hiding column manager");
 			columnManagerSection.style.display = "none";
 		} else {
+			console.log("Showing column manager");
 			columnManagerSection.style.display = "block";
+			columnManagerSection.style.visibility = "visible";
+			columnManagerSection.style.opacity = "1";
+			columnManagerSection.style.position = "relative";
+			columnManagerSection.style.zIndex = "1000";
+			columnManagerSection.style.minHeight = "300px"; // Mindesthöhe setzen
+			columnManagerSection.style.width = "100%"; // Breite setzen
+			console.log(
+				"After setting display block:",
+				columnManagerSection.style.display
+			);
+
+			// Prüfe die tatsächliche Sichtbarkeit
+			setTimeout(() => {
+				const rect = columnManagerSection.getBoundingClientRect();
+				console.log("Column Manager dimensions:", rect);
+				console.log(
+					"Column Manager offsetHeight:",
+					columnManagerSection.offsetHeight
+				);
+				console.log(
+					"Column Manager offsetWidth:",
+					columnManagerSection.offsetWidth
+				);
+			}, 100);
+
+			// Prüfe ob Daten vorhanden sind
+			if (!this.originalData || this.originalData.length === 0) {
+				console.warn("No data available for Column Manager");
+				columnManagerSection.innerHTML = `
+					<div class="column-manager-header">
+						<h3><i class="fas fa-columns"></i> Spalten-Manager</h3>
+						<button id="closeColumnManager" class="btn-small btn-danger" onclick="document.getElementById('columnManagerSection').style.display='none'">
+							<i class="fas fa-times"></i> Schließen
+						</button>
+					</div>
+					<div class="column-manager-content">
+						<p style="text-align: center; padding: 20px; color: #666;">
+							<i class="fas fa-info-circle"></i> Bitte laden Sie zuerst eine JSON-Datei, um den Spalten-Manager zu verwenden.
+						</p>
+					</div>
+				`;
+			} else {
+				// Generiere Spalten-Manager Inhalt wenn nötig
+				this.createColumnManager();
+			}
+
 			// Smooth scroll to column manager
 			columnManagerSection.scrollIntoView({
 				behavior: "smooth",
@@ -1370,14 +1451,66 @@ class JSONVisualizer {
 
 	// Structure Diagram Functions
 	toggleStructureDiagram() {
+		console.log(
+			"toggleStructureDiagram called",
+			this.rawJsonData ? "Data available" : "No data"
+		);
 		const diagramSection = document.getElementById("structureDiagramSection");
-		const isVisible = diagramSection.style.display !== "none";
+		console.log("diagramSection found:", diagramSection);
+
+		if (!diagramSection) {
+			console.error("Structure Diagram Section not found!");
+			return;
+		}
+
+		// Verbesserte Sichtbarkeitsprüfung
+		const computedStyle = window.getComputedStyle(diagramSection);
+		const isVisible = computedStyle.display !== "none";
+		console.log("Current display style:", diagramSection.style.display);
+		console.log("Computed display style:", computedStyle.display);
+		console.log("isVisible:", isVisible);
 
 		if (isVisible) {
+			console.log("Hiding diagram");
 			diagramSection.style.display = "none";
 		} else {
+			console.log("Showing diagram");
 			diagramSection.style.display = "block";
-			this.generateStructureDiagram();
+			diagramSection.style.visibility = "visible";
+			diagramSection.style.opacity = "1";
+			diagramSection.style.position = "relative";
+			diagramSection.style.zIndex = "1000";
+			diagramSection.style.minHeight = "400px"; // Mindesthöhe setzen
+			diagramSection.style.width = "100%"; // Breite setzen
+			console.log("After setting display block:", diagramSection.style.display);
+
+			// Prüfe die tatsächliche Sichtbarkeit
+			setTimeout(() => {
+				const rect = diagramSection.getBoundingClientRect();
+				console.log("Element dimensions:", rect);
+				console.log("Element offsetHeight:", diagramSection.offsetHeight);
+				console.log("Element offsetWidth:", diagramSection.offsetWidth);
+			}, 100);
+
+			// Prüfe ob Daten vorhanden sind
+			if (!this.rawJsonData) {
+				console.warn("No raw JSON data available for Structure Diagram");
+				diagramSection.innerHTML = `
+					<div class="diagram-header">
+						<h3><i class="fas fa-project-diagram"></i> JSON Struktur-Diagramm</h3>
+						<button onclick="document.getElementById('structureDiagramSection').style.display='none'" class="btn-small btn-danger">
+							<i class="fas fa-times"></i> Schließen
+						</button>
+					</div>
+					<div class="diagram-content">
+						<p style="text-align: center; padding: 40px; color: #666;">
+							<i class="fas fa-info-circle"></i> Bitte laden Sie zuerst eine JSON-Datei, um das Struktur-Diagramm zu verwenden.
+						</p>
+					</div>
+				`;
+			} else {
+				this.generateStructureDiagram();
+			}
 
 			// Smooth scroll to diagram
 			diagramSection.scrollIntoView({
@@ -1387,9 +1520,14 @@ class JSONVisualizer {
 	}
 
 	generateStructureDiagram() {
-		if (!this.rawJsonData) return;
+		console.log("generateStructureDiagram called", this.rawJsonData);
+		if (!this.rawJsonData) {
+			console.log("No rawJsonData available");
+			return;
+		}
 
 		const diagramContainer = document.getElementById("structureDiagram");
+		console.log("diagramContainer found:", diagramContainer);
 		this.currentDiagramMode = this.currentDiagramMode || "fishbone";
 
 		if (this.currentDiagramMode === "fishbone") {
@@ -1414,9 +1552,11 @@ class JSONVisualizer {
 	}
 
 	createFishboneDiagram(container) {
+		console.log("createFishboneDiagram called");
 		const structure = this.analyzeJSONStructure(this.rawJsonData);
+		console.log("Structure analyzed:", structure);
 
-		container.innerHTML = `
+		const svgContent = `
 			<div class="diagram-mode-indicator">
 				<i class="fas fa-fish"></i> Fischgräten-Diagramm
 			</div>
@@ -1433,6 +1573,18 @@ class JSONVisualizer {
 				${this.generateFishboneBranches(structure, 100, 250, 600)}
 			</svg>
 		`;
+
+		console.log("Setting container innerHTML");
+		container.innerHTML = svgContent;
+		console.log("Container innerHTML set, content length:", svgContent.length);
+		console.log("Container after innerHTML:", container);
+		console.log("Container children count:", container.children.length);
+
+		// Prüfe ob Container Höhe hat
+		setTimeout(() => {
+			console.log("Container offsetHeight after SVG:", container.offsetHeight);
+			console.log("Container scrollHeight after SVG:", container.scrollHeight);
+		}, 50);
 	}
 
 	createTreeDiagram(container) {
@@ -1488,11 +1640,16 @@ class JSONVisualizer {
 	}
 
 	generateFishboneBranches(structure, startX, centerY, width) {
-		if (!structure.children || structure.children.length === 0) return "";
+		console.log("generateFishboneBranches called", structure);
+		if (!structure.children || structure.children.length === 0) {
+			console.log("No children found, returning empty string");
+			return "";
+		}
 
 		let svg = "";
 		const branchHeight = 40;
 		const childCount = structure.children.length;
+		console.log("Generating branches for", childCount, "children");
 
 		structure.children.forEach((child, index) => {
 			const isTop = index % 2 === 0;
@@ -1520,6 +1677,7 @@ class JSONVisualizer {
 			</text>`;
 		});
 
+		console.log("Generated SVG length:", svg.length);
 		return svg;
 	}
 
@@ -1581,10 +1739,6 @@ class JSONVisualizer {
 	}
 }
 
-// App initialisieren wenn DOM geladen ist
-document.addEventListener("DOMContentLoaded", () => {
-	new JSONVisualizer();
-});
 // App initialisieren wenn DOM geladen ist
 document.addEventListener("DOMContentLoaded", () => {
 	new JSONVisualizer();

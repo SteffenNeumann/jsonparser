@@ -436,6 +436,17 @@ header.compact p {
 	border-color: var(--secondary-gray);
 }
 
+.btn-primary {
+	background: var(--primary-orange);
+	color: white;
+	border-color: var(--primary-orange);
+}
+
+.btn-primary:hover {
+	background: var(--primary-orange-hover);
+	border-color: var(--primary-orange-hover);
+}
+
 /* Column Manager Section - Postman-Style */
 .column-manager-section {
 	background: var(--bg-white);
