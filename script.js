@@ -1080,7 +1080,22 @@ class JSONVisualizer {
 			const aVal = a[column] || "";
 			const bVal = b[column] || "";
 
-			// Versuche numerische Sortierung
+			// Bestimme den Datentyp für intelligente Sortierung
+			const dataType = this.detectDataType(aVal);
+
+			// Datum-Sortierung - verwende originale Werte für korrekte chronologische Sortierung
+			if (dataType === "date") {
+				const aDate = this.parseToDate(aVal);
+				const bDate = this.parseToDate(bVal);
+
+				if (aDate && bDate) {
+					return this.currentSort.direction === "asc"
+						? aDate.getTime() - bDate.getTime()
+						: bDate.getTime() - aDate.getTime();
+				}
+			}
+
+			// Numerische Sortierung
 			const aNum = parseFloat(aVal);
 			const bNum = parseFloat(bVal);
 
@@ -1088,7 +1103,7 @@ class JSONVisualizer {
 				return this.currentSort.direction === "asc" ? aNum - bNum : bNum - aNum;
 			}
 
-			// String-Sortierung
+			// String-Sortierung (fallback)
 			const aStr = String(aVal).toLowerCase();
 			const bStr = String(bVal).toLowerCase();
 
@@ -1445,14 +1460,22 @@ class JSONVisualizer {
 				return boolValue ? "✓ True" : "✗ False";
 
 			case "date":
-				// Einfache Regex-Säuberung - keine Umrechnung!
+				// Präzise Formatierung - behalte Stunden und Minuten, entferne nur Sekunden
 				if (typeof value === "string") {
-					// Entferne Zeitzonen-Info (Z, +XX:XX) und Sekunden
-					return value
-						.replace(/Z$/, "") // Entferne Z am Ende
-						.replace(/[+-]\d{2}:\d{2}$/, "") // Entferne Timezone +XX:XX
-						.replace(/:\d{2}$/, "") // Entferne Sekunden :XX
-						.replace("T", " "); // Ersetze T mit Leerzeichen
+					let formatted = value;
+
+					// Entferne Zeitzonen-Info
+					formatted = formatted.replace(/Z$/, ""); // Entferne Z am Ende
+					formatted = formatted.replace(/[+-]\d{2}:\d{2}$/, ""); // Entferne Timezone +XX:XX
+
+					// Entferne nur Sekunden und Millisekunden (aber behalte Minuten!)
+					// Muster: HH:MM:SS oder HH:MM:SS.SSS -> HH:MM
+					formatted = formatted.replace(/(\d{2}:\d{2}):\d{2}(\.\d+)?/, "$1");
+
+					// Ersetze T mit Leerzeichen
+					formatted = formatted.replace("T", " ");
+
+					return formatted;
 				}
 				return value;
 
@@ -1472,6 +1495,50 @@ class JSONVisualizer {
 					return value.substring(0, 97) + "...";
 				}
 				return value;
+		}
+	}
+
+	// Hilfsfunktion zum Parsen verschiedener Datumsformate für Sortierung
+	parseToDate(dateString) {
+		if (!dateString || typeof dateString !== "string") {
+			return null;
+		}
+
+		// Versuche verschiedene Datumsformate zu parsen
+		try {
+			// ISO Format: 2025-08-08T14:30:00Z oder 2025-08-08 14:30:00
+			if (dateString.match(/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/)) {
+				// Normalisiere das Format für Date-Parser
+				let normalized = dateString
+					.replace("T", " ") // T durch Leerzeichen ersetzen
+					.replace(/Z$/, "") // Z entfernen
+					.replace(/[+-]\d{2}:\d{2}$/, ""); // Timezone entfernen
+
+				return new Date(normalized);
+			}
+
+			// Datum ohne Zeit: 2025-08-08
+			if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+				return new Date(dateString);
+			}
+
+			// Amerikanisches Format: MM/DD/YYYY
+			if (dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+				return new Date(dateString);
+			}
+
+			// Deutsches Format: DD.MM.YYYY
+			if (dateString.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+				const parts = dateString.split(".");
+				return new Date(parts[2], parts[1] - 1, parts[0]); // Jahr, Monat-1, Tag
+			}
+
+			// Fallback: Versuche Standard Date-Parser
+			const parsed = new Date(dateString);
+			return isNaN(parsed.getTime()) ? null : parsed;
+		} catch (error) {
+			console.warn("Fehler beim Parsen des Datums:", dateString, error);
+			return null;
 		}
 	}
 
