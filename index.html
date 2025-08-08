@@ -221,6 +221,22 @@
 							Struktur und Abhängigkeiten Ihrer JSON-Daten.
 						</p>
 					</div>
+					<!-- Zoom and Pan Controls -->
+					<div class="diagram-zoom-controls">
+						<button id="zoomInBtn" class="zoom-control-btn">
+							<i class="fas fa-search-plus"></i> Vergrößern
+						</button>
+						<button id="zoomOutBtn" class="zoom-control-btn">
+							<i class="fas fa-search-minus"></i> Verkleinern
+						</button>
+						<div class="zoom-level-display" id="zoomLevel">100%</div>
+						<button id="resetZoomBtn" class="zoom-control-btn">
+							<i class="fas fa-expand-arrows-alt"></i> Zurücksetzen
+						</button>
+						<button id="centerDiagramBtn" class="zoom-control-btn">
+							<i class="fas fa-crosshairs"></i> Zentrieren
+						</button>
+					</div>
 					<div id="structureDiagram" class="structure-diagram">
 						<!-- Dynamisch generiertes SVG-Diagramm -->
 					</div>

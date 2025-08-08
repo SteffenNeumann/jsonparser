@@ -718,6 +718,9 @@ table {
 thead {
 	background-color: var(--secondary-gray-light);
 	border-bottom: 2px solid var(--border-light);
+	position: sticky;
+	top: 0;
+	z-index: 10;
 }
 
 th {
@@ -735,10 +738,14 @@ th {
 	z-index: 10;
 	cursor: pointer;
 	border-right: 1px solid var(--border-light);
+	background-color: var(--secondary-gray-light);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 }
 
 th:hover {
-	background-color: var(--border-light);
+	background-color: var(--bg-white);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 th i {
@@ -1191,6 +1198,7 @@ select:focus {
 .diagram-controls {
 	display: flex;
 	gap: 8px;
+	align-items: center;
 }
 
 .diagram-content {
@@ -1211,6 +1219,49 @@ select:focus {
 	color: var(--text-medium);
 }
 
+/* Diagram Zoom and Pan Controls */
+.diagram-zoom-controls {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 8px 12px;
+	border-radius: 6px;
+	border: 1px solid var(--border-light);
+	margin-bottom: 16px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.zoom-control-btn {
+	background: var(--bg-white);
+	border: 1px solid var(--border-medium);
+	color: var(--text-dark);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.zoom-control-btn:hover {
+	background: var(--secondary-gray-light);
+	border-color: var(--primary-orange);
+}
+
+.zoom-level-display {
+	background: var(--secondary-gray-light);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--text-dark);
+	min-width: 60px;
+	text-align: center;
+}
+
 .structure-diagram {
 	width: 100%;
 	min-height: 400px;
@@ -1219,6 +1270,31 @@ select:focus {
 	border-radius: 6px;
 	background: var(--bg-white);
 	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.diagram-svg-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+	transform-origin: center center;
+	transition: transform 0.3s ease;
+	cursor: grab;
+}
+
+.diagram-svg-container:active {
+	cursor: grabbing;
+}
+
+.diagram-svg-container svg {
+	display: block;
+	margin: auto;
+	border-radius: 4px;
 }
 
 /* SVG Diagram Styles */

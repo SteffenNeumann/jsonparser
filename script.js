@@ -8,6 +8,13 @@ class JSONVisualizer {
 		this.columnOrder = [];
 		this.columnTypes = {};
 		this.rawJsonData = null; // Speichere die ursprüngliche JSON-Struktur
+		this.currentDiagramMode = "fishbone";
+		this.diagramZoom = 1;
+		this.diagramPanX = 0;
+		this.diagramPanY = 0;
+		this.isDragging = false;
+		this.lastMouseX = 0;
+		this.lastMouseY = 0;
 		this.init();
 	}
 
@@ -95,6 +102,25 @@ class JSONVisualizer {
 		document.getElementById("closeDiagram").addEventListener("click", () => {
 			this.toggleStructureDiagram();
 		});
+
+		// Diagram Zoom and Pan Controls
+		document.getElementById("zoomInBtn").addEventListener("click", () => {
+			this.zoomDiagram(1.2);
+		});
+
+		document.getElementById("zoomOutBtn").addEventListener("click", () => {
+			this.zoomDiagram(0.8);
+		});
+
+		document.getElementById("resetZoomBtn").addEventListener("click", () => {
+			this.resetDiagramZoom();
+		});
+
+		document
+			.getElementById("centerDiagramBtn")
+			.addEventListener("click", () => {
+				this.centerDiagram();
+			});
 
 		// Level Selector Events
 		document.getElementById("applyLevelsBtn").addEventListener("click", () => {
@@ -1560,22 +1586,31 @@ class JSONVisualizer {
 			<div class="diagram-mode-indicator">
 				<i class="fas fa-fish"></i> Fischgräten-Diagramm
 			</div>
-			<svg width="800" height="500" viewBox="0 0 800 500">
-				<!-- Main spine -->
-				<line x1="100" y1="250" x2="700" y2="250" stroke="#2196F3" stroke-width="3"/>
-				
-				<!-- Main root -->
-				<g id="main-root">
-					<circle cx="720" cy="250" r="8" fill="#4CAF50"/>
-					<text x="730" y="255" font-family="Arial" font-size="12" fill="#333">JSON Root</text>
-				</g>
-				
-				${this.generateFishboneBranches(structure, 100, 250, 600)}
-			</svg>
+			<div class="diagram-svg-container">
+				<svg width="1000" height="600" viewBox="0 0 1000 600">
+					<!-- Main spine -->
+					<line x1="100" y1="300" x2="900" y2="300" stroke="#2196F3" stroke-width="3"/>
+					
+					<!-- Main root -->
+					<g id="main-root">
+						<circle cx="920" cy="300" r="10" fill="#4CAF50"/>
+						<text x="940" y="305" font-family="Arial" font-size="14" fill="#333">JSON Root</text>
+					</g>
+					
+					${this.generateFishboneBranches(structure, 100, 300, 800)}
+				</svg>
+			</div>
 		`;
 
 		console.log("Setting container innerHTML");
 		container.innerHTML = svgContent;
+
+		// Setup pan and zoom functionality
+		setTimeout(() => {
+			this.setupDiagramPan();
+			this.updateZoomDisplay();
+		}, 100);
+
 		console.log("Container innerHTML set, content length:", svgContent.length);
 		console.log("Container after innerHTML:", container);
 		console.log("Container children count:", container.children.length);
@@ -1594,10 +1629,18 @@ class JSONVisualizer {
 			<div class="diagram-mode-indicator">
 				<i class="fas fa-tree"></i> Baum-Diagramm
 			</div>
-			<svg width="800" height="600" viewBox="0 0 800 600">
-				${this.generateTreeBranches(structure, 400, 50, 0)}
-			</svg>
+			<div class="diagram-svg-container">
+				<svg width="1000" height="700" viewBox="0 0 1000 700">
+					${this.generateTreeBranches(structure, 500, 50, 0)}
+				</svg>
+			</div>
 		`;
+
+		// Setup pan and zoom functionality
+		setTimeout(() => {
+			this.setupDiagramPan();
+			this.updateZoomDisplay();
+		}, 100);
 	}
 
 	analyzeJSONStructure(data, path = "", maxDepth = 5, currentDepth = 0) {
@@ -1736,6 +1779,83 @@ class JSONVisualizer {
 			null: "#757575",
 		};
 		return colors[type] || "#607D8B";
+	}
+
+	// Diagram Zoom and Pan Functions
+	zoomDiagram(factor) {
+		this.diagramZoom *= factor;
+		this.diagramZoom = Math.max(0.2, Math.min(3, this.diagramZoom)); // Begrenzen zwischen 20% und 300%
+		this.updateDiagramTransform();
+		this.updateZoomDisplay();
+	}
+
+	resetDiagramZoom() {
+		this.diagramZoom = 1;
+		this.diagramPanX = 0;
+		this.diagramPanY = 0;
+		this.updateDiagramTransform();
+		this.updateZoomDisplay();
+	}
+
+	centerDiagram() {
+		this.diagramPanX = 0;
+		this.diagramPanY = 0;
+		this.updateDiagramTransform();
+	}
+
+	updateDiagramTransform() {
+		const container = document.querySelector(".diagram-svg-container");
+		if (container) {
+			container.style.transform = `translate(${this.diagramPanX}px, ${this.diagramPanY}px) scale(${this.diagramZoom})`;
+		}
+	}
+
+	updateZoomDisplay() {
+		const zoomDisplay = document.getElementById("zoomLevel");
+		if (zoomDisplay) {
+			zoomDisplay.textContent = `${Math.round(this.diagramZoom * 100)}%`;
+		}
+	}
+
+	setupDiagramPan() {
+		const container = document.querySelector(".diagram-svg-container");
+		if (!container) return;
+
+		container.addEventListener("mousedown", (e) => {
+			this.isDragging = true;
+			this.lastMouseX = e.clientX;
+			this.lastMouseY = e.clientY;
+			container.style.cursor = "grabbing";
+		});
+
+		document.addEventListener("mousemove", (e) => {
+			if (!this.isDragging) return;
+
+			const deltaX = e.clientX - this.lastMouseX;
+			const deltaY = e.clientY - this.lastMouseY;
+
+			this.diagramPanX += deltaX;
+			this.diagramPanY += deltaY;
+
+			this.updateDiagramTransform();
+
+			this.lastMouseX = e.clientX;
+			this.lastMouseY = e.clientY;
+		});
+
+		document.addEventListener("mouseup", () => {
+			this.isDragging = false;
+			if (container) {
+				container.style.cursor = "grab";
+			}
+		});
+
+		// Scroll-Zoom
+		container.addEventListener("wheel", (e) => {
+			e.preventDefault();
+			const factor = e.deltaY > 0 ? 0.9 : 1.1;
+			this.zoomDiagram(factor);
+		});
 	}
 }
 
