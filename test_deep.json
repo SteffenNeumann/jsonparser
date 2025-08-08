@@ -1,0 +1,52 @@
+{
+	"level1": {
+		"name": "Level 1 Data",
+		"id": 1,
+		"level2": {
+			"name": "Level 2 Data",
+			"id": 2,
+			"level3": {
+				"name": "Level 3 Data",
+				"id": 3,
+				"level4": {
+					"name": "Level 4 Data",
+					"id": 4,
+					"level5": {
+						"name": "Level 5 Data",
+						"id": 5,
+						"level6": {
+							"name": "Level 6 Data",
+							"id": 6
+						}
+					}
+				}
+			}
+		}
+	},
+	"users": [
+		{
+			"name": "John Doe",
+			"age": 30,
+			"address": {
+				"street": "123 Main St",
+				"city": "New York",
+				"details": {
+					"zipcode": "10001",
+					"country": "USA"
+				}
+			}
+		},
+		{
+			"name": "Jane Smith",
+			"age": 25,
+			"address": {
+				"street": "456 Oak Ave",
+				"city": "Los Angeles",
+				"details": {
+					"zipcode": "90210",
+					"country": "USA"
+				}
+			}
+		}
+	]
+}

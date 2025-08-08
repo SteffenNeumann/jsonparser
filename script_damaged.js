@@ -8,6 +8,7 @@ class JSONVisualizer {
 		this.columnOrder = [];
 		this.columnTypes = {};
 		this.rawJsonData = null; // Speichere die ursprüngliche JSON-Struktur
+		this.diagramMode = "fishbone"; // "fishbone" oder "tree"
 		this.init();
 	}
 
@@ -74,33 +75,6 @@ class JSONVisualizer {
 				this.toggleColumnManager();
 			});
 
-		// Structure Diagram Button
-		document
-			.getElementById("structureDiagramBtn")
-			.addEventListener("click", () => {
-				this.toggleStructureDiagram();
-			});
-
-		// Diagram Controls
-		document
-			.getElementById("toggleDiagramMode")
-			.addEventListener("click", () => {
-				this.switchDiagramMode();
-			});
-
-		document.getElementById("closeDiagram").addEventListener("click", () => {
-			this.toggleStructureDiagram();
-		});
-
-		// Level Selector Events
-		document.getElementById("applyLevelsBtn").addEventListener("click", () => {
-			this.applyLevelSelection();
-		});
-
-		document.getElementById("levelSelector").addEventListener("change", () => {
-			this.applyLevelSelection();
-		});
-
 		// Column Manager Controls
 		document
 			.getElementById("selectAllColumns")
@@ -124,6 +98,25 @@ class JSONVisualizer {
 			.getElementById("closeColumnManager")
 			.addEventListener("click", () => {
 				this.toggleColumnManager();
+			});
+
+		// Structure Diagram Button
+		document
+			.getElementById("structureDiagramBtn")
+			.addEventListener("click", () => {
+				this.toggleStructureDiagram();
+			});
+
+		document
+			.getElementById("closeDiagram")
+			.addEventListener("click", () => {
+				this.toggleStructureDiagram();
+			});
+
+		document
+			.getElementById("toggleDiagramMode")
+			.addEventListener("click", () => {
+				this.toggleDiagramMode();
 			});
 
 		// Upload Area Click
@@ -203,43 +196,11 @@ class JSONVisualizer {
 		// Speichere die ursprüngliche JSON-Struktur für das Diagramm
 		this.rawJsonData = data;
 
-		// Konvertiere verschiedene JSON-Strukturen zu Array von Objekten (ursprüngliche Logik)
+		// Konvertiere verschiedene JSON-Strukturen zu Array von Objekten
 		let processedData = [];
 
-		if (Array.isArray(data)) {
-			processedData = data;
-		} else if (typeof data === "object" && data !== null) {
-			// Wenn es ein Objekt ist, schaue nach Array-Properties
-			const arrayKeys = Object.keys(data).filter((key) =>
-				Array.isArray(data[key])
-			);
-
-			if (arrayKeys.length > 1) {
-				// Mehrere Arrays gefunden - kombiniere alle Arrays
-				console.log(`Mehrere Arrays gefunden: ${arrayKeys.join(", ")}`);
-
-				arrayKeys.forEach((key) => {
-					const arrayData = data[key];
-					// Füge Array-Namen als zusätzliche Spalte hinzu
-					const enrichedData = arrayData.map((item) => ({
-						...item,
-						_arraySource: key, // Markiere woher das Item kommt
-					}));
-					processedData = processedData.concat(enrichedData);
-				});
-			} else if (arrayKeys.length === 1) {
-				// Ein Array gefunden - verwende es
-				processedData = data[arrayKeys[0]];
-			} else {
-				// Kein Array gefunden - konvertiere das Objekt selbst
-				processedData = [data];
-			}
-		} else {
-			this.showError(
-				"Die JSON-Struktur wird nicht unterstützt. Erwartet wird ein Array oder ein Objekt mit Arrays."
-			);
-			return;
-		}
+		// Neue erweiterte Funktion: Alle Ebenen des JSON durchlaufen
+		processedData = this.extractAllLevels(data, "");
 
 		// Filtere nur Objekte
 		processedData = processedData.filter(
@@ -259,27 +220,23 @@ class JSONVisualizer {
 
 		this.createTable(fileName);
 		this.showTableSection();
-		this.showLevelSelector(); // Zeige die Ebenen-Auswahl
 	}
 
 	// Neue Funktion: Extrahiert alle Ebenen des JSON rekursiv
-	extractAllLevels(data, parentPath = "", level = 0, maxLevel = 8) {
+	extractAllLevels(data, parentPath = "", level = 0) {
 		const result = [];
+		const maxLevel = 10; // Verhindere unendliche Schleifen
 
 		if (level > maxLevel) {
-			console.warn(
-				`Maximale Verschachtelungstiefe erreicht bei: ${parentPath}`
-			);
+			console.warn(`Maximale Verschachtelungstiefe erreicht bei: ${parentPath}`);
 			return result;
 		}
 
 		if (Array.isArray(data)) {
 			// Wenn es ein Array ist, durchlaufe alle Elemente
 			data.forEach((item, index) => {
-				const currentPath = parentPath
-					? `${parentPath}[${index}]`
-					: `[${index}]`;
-
+				const currentPath = parentPath ? `${parentPath}[${index}]` : `[${index}]`;
+				
 				if (typeof item === "object" && item !== null) {
 					// Füge Metadaten hinzu
 					const enrichedItem = {
@@ -287,20 +244,13 @@ class JSONVisualizer {
 						_path: currentPath,
 						_level: level,
 						_type: "array-item",
-						_parent: parentPath || "root",
+						_parent: parentPath || "root"
 					};
 					result.push(enrichedItem);
-
-					// Rekursiv in verschachtelte Strukturen nur wenn unter maxLevel
-					if (level < maxLevel) {
-						const nestedResults = this.extractAllLevels(
-							item,
-							currentPath,
-							level + 1,
-							maxLevel
-						);
-						result.push(...nestedResults);
-					}
+					
+					// Rekursiv in verschachtelte Strukturen
+					const nestedResults = this.extractAllLevels(item, currentPath, level + 1);
+					result.push(...nestedResults);
 				} else {
 					// Primitive Werte als einzelne Einträge
 					result.push({
@@ -309,7 +259,7 @@ class JSONVisualizer {
 						_type: "primitive",
 						_parent: parentPath || "root",
 						value: item,
-						dataType: typeof item,
+						dataType: typeof item
 					});
 				}
 			});
@@ -319,48 +269,36 @@ class JSONVisualizer {
 				_path: parentPath || "root",
 				_level: level,
 				_type: "object",
-				_parent: parentPath ? parentPath.split(".").slice(0, -1).join(".") : "",
-				...data,
+				_parent: parentPath ? parentPath.split('.').slice(0, -1).join('.') : "",
+				...data
 			};
 			result.push(objectEntry);
 
-			// Durchlaufe alle Eigenschaften des Objekts nur wenn unter maxLevel
-			if (level < maxLevel) {
-				for (const key in data) {
-					if (data.hasOwnProperty(key)) {
-						const value = data[key];
-						const currentPath = parentPath ? `${parentPath}.${key}` : key;
+			// Durchlaufe alle Eigenschaften des Objekts
+			for (const key in data) {
+				if (data.hasOwnProperty(key)) {
+					const value = data[key];
+					const currentPath = parentPath ? `${parentPath}.${key}` : key;
 
-						if (Array.isArray(value)) {
-							// Array-Eigenschaft
-							const nestedResults = this.extractAllLevels(
-								value,
-								currentPath,
-								level + 1,
-								maxLevel
-							);
-							result.push(...nestedResults);
-						} else if (typeof value === "object" && value !== null) {
-							// Verschachteltes Objekt
-							const nestedResults = this.extractAllLevels(
-								value,
-								currentPath,
-								level + 1,
-								maxLevel
-							);
-							result.push(...nestedResults);
-						} else {
-							// Primitive Eigenschaft - füge sie als separaten Eintrag hinzu
-							result.push({
-								_path: currentPath,
-								_level: level + 1,
-								_type: "property",
-								_parent: parentPath || "root",
-								_propertyName: key,
-								value: value,
-								dataType: typeof value,
-							});
-						}
+					if (Array.isArray(value)) {
+						// Array-Eigenschaft
+						const nestedResults = this.extractAllLevels(value, currentPath, level + 1);
+						result.push(...nestedResults);
+					} else if (typeof value === "object" && value !== null) {
+						// Verschachteltes Objekt
+						const nestedResults = this.extractAllLevels(value, currentPath, level + 1);
+						result.push(...nestedResults);
+					} else {
+						// Primitive Eigenschaft - füge sie als separaten Eintrag hinzu
+						result.push({
+							_path: currentPath,
+							_level: level + 1,
+							_type: "property",
+							_parent: parentPath || "root",
+							_propertyName: key,
+							value: value,
+							dataType: typeof value
+						});
 					}
 				}
 			}
@@ -372,7 +310,7 @@ class JSONVisualizer {
 				_type: "primitive",
 				_parent: "",
 				value: data,
-				dataType: typeof data,
+				dataType: typeof data
 			});
 		}
 
@@ -1035,12 +973,16 @@ class JSONVisualizer {
 		this.visibleColumns = [];
 		this.columnOrder = [];
 		this.columnTypes = {};
+		this.rawJsonData = null; // Reset JSON data
 
 		// Upload-Bereich zurück zum normalen Zustand
 		const uploadArea = document.getElementById("uploadArea");
 		const uploadSection = document.querySelector(".upload-section");
+		const header = document.querySelector("header");
+
 		uploadArea.classList.remove("compact");
 		uploadSection.classList.remove("compact");
+		header.classList.remove("compact");
 
 		document.getElementById("fileInput").value = "";
 		document.getElementById("searchInput").value = "";
@@ -1055,6 +997,7 @@ class JSONVisualizer {
 		document.getElementById("controlsSection").style.display = "none";
 		document.getElementById("tableSection").style.display = "none";
 		document.getElementById("columnManagerSection").style.display = "none";
+		document.getElementById("structureDiagramSection").style.display = "none";
 		document.getElementById("errorSection").style.display = "none";
 	}
 
@@ -1062,8 +1005,11 @@ class JSONVisualizer {
 		// Upload-Bereich kompakt machen
 		const uploadArea = document.getElementById("uploadArea");
 		const uploadSection = document.querySelector(".upload-section");
+		const header = document.querySelector("header");
+
 		uploadArea.classList.add("compact");
 		uploadSection.classList.add("compact");
+		header.classList.add("compact");
 
 		document.getElementById("dashboardSection").style.display = "block";
 		document.getElementById("controlsSection").style.display = "block";
@@ -1075,95 +1021,6 @@ class JSONVisualizer {
 			behavior: "smooth",
 		});
 	}
-
-	showLevelSelector() {
-		// Zeige den Level-Selector
-		document.getElementById("levelSelectorContainer").style.display = "flex";
-	}
-
-	applyLevelSelection() {
-		const selectedLevel = document.getElementById("levelSelector").value;
-
-		if (!this.rawJsonData) return;
-
-		let processedData = [];
-
-		if (selectedLevel === "all") {
-			// Alle Ebenen anzeigen
-			processedData = this.extractAllLevels(this.rawJsonData, "");
-		} else {
-			// Nur bestimmte Anzahl von Ebenen
-			const maxLevel = parseInt(selectedLevel) - 1;
-			processedData = this.extractAllLevels(this.rawJsonData, "", 0, maxLevel);
-		}
-
-		// Filtere nur Objekte
-		processedData = processedData.filter(
-			(item) => typeof item === "object" && item !== null
-		);
-
-		if (processedData.length === 0) {
-			// Fallback zur ursprünglichen Verarbeitung
-			this.processJSONDataOriginal();
-			return;
-		}
-
-		// Flatte verschachtelte Objekte
-		processedData = processedData.map((item) => this.flattenObject(item));
-
-		this.originalData = processedData;
-		this.filteredData = [...processedData];
-
-		// Aktualisiere die Tabelle
-		this.createTable(
-			document.getElementById("fileName").textContent.replace("Datei: ", "")
-		);
-	}
-
-	processJSONDataOriginal() {
-		// Originale JSON-Verarbeitung (nur erste Ebene)
-		let processedData = [];
-
-		if (Array.isArray(this.rawJsonData)) {
-			processedData = this.rawJsonData;
-		} else if (
-			typeof this.rawJsonData === "object" &&
-			this.rawJsonData !== null
-		) {
-			const arrayKeys = Object.keys(this.rawJsonData).filter((key) =>
-				Array.isArray(this.rawJsonData[key])
-			);
-
-			if (arrayKeys.length > 1) {
-				arrayKeys.forEach((key) => {
-					const arrayData = this.rawJsonData[key];
-					const enrichedData = arrayData.map((item) => ({
-						...item,
-						_arraySource: key,
-					}));
-					processedData = processedData.concat(enrichedData);
-				});
-			} else if (arrayKeys.length === 1) {
-				processedData = this.rawJsonData[arrayKeys[0]];
-			} else {
-				processedData = [this.rawJsonData];
-			}
-		}
-
-		processedData = processedData.filter(
-			(item) => typeof item === "object" && item !== null
-		);
-
-		processedData = processedData.map((item) => this.flattenObject(item));
-
-		this.originalData = processedData;
-		this.filteredData = [...processedData];
-
-		this.createTable(
-			document.getElementById("fileName").textContent.replace("Datei: ", "")
-		);
-	}
-
 	showError(message) {
 		document.getElementById("errorText").textContent = message;
 		document.getElementById("errorSection").style.display = "block";
@@ -1287,30 +1144,83 @@ class JSONVisualizer {
 			return "boolean";
 		}
 
-		// Number Check
+		// Number Check - erweitert um serielle Datumswerte
 		const numValue = parseFloat(value);
-		if (
-			!isNaN(numValue) &&
-			isFinite(numValue) &&
-			value.toString().trim() !== ""
-		) {
-			return "number";
+		if (!isNaN(numValue) && isFinite(numValue)) {
+			// Excel Serial Date Check (1900-basiert, typisch 1-50000)
+			// Spaltennamen prüfen um Datumskontext zu erkennen
+			if (numValue > 1 && numValue < 50000) {
+				return "date";
+			}
+
+			// Fractional day values (0.xxx für Uhrzeiten)
+			if (numValue > 0 && numValue < 1) {
+				return "date";
+			}
+
+			// Unix Timestamp Check (10 oder 13 Stellen)
+			const numStr = value.toString();
+			if (/^\d{10}$/.test(numStr) || /^\d{13}$/.test(numStr)) {
+				const timestamp = parseInt(numStr);
+				const date = new Date(
+					/^\d{10}$/.test(numStr) ? timestamp * 1000 : timestamp
+				);
+				if (
+					!isNaN(date.getTime()) &&
+					date.getFullYear() > 1970 &&
+					date.getFullYear() < 2100
+				) {
+					return "date";
+				}
+			}
+
+			// Normale Zahlen
+			if (value.toString().trim() !== "") {
+				return "number";
+			}
 		}
 
-		// Date Check - erweiterte Patterns für bessere Erkennung
+		// DateTime/Date Check (erweitert)
 		if (typeof value === "string") {
-			// ISO datetime patterns mit Zeitzonen
-			const datePatterns = [
-				/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
-				/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}Z?$/, // YYYY-MM-DD HH:MM mit optionalem Z
-				/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}[+-]\d{2}:\d{2}$/, // YYYY-MM-DD HH:MM+TZ
-				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/, // ISO format
-				/^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY
-				/^\d{2}\.\d{2}\.\d{4}$/, // DD.MM.YYYY
+			// Erweiterte Datums- und Zeit-Pattern
+			const dateTimePatterns = [
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // ISO DateTime (mit oder ohne Z/Timezone)
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/, // ISO DateTime kurz (YYYY-MM-DDTHH:MM)
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z?/, // YYYY-MM-DD HH:MM:SS mit optionalem Z
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}Z?/, // YYYY-MM-DD HH:MM mit optionalem Z
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // YYYY-MM-DD HH:MM:SS+TZ
+				/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}[+\-]\d{2}:\d{2}/, // YYYY-MM-DD HH:MM+TZ
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // ISO mit Timezone
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}[+\-]\d{2}:\d{2}/, // ISO kurz mit Timezone
+				/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/, // MM/DD/YYYY HH:MM
+				/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/, // DD.MM.YYYY HH:MM
+				/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (nur Datum)
+				/^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY (nur Datum)
+				/^\d{2}\.\d{2}\.\d{4}$/, // DD.MM.YYYY (nur Datum)
+				/^\d{2}:\d{2}:\d{2}$/, // HH:MM:SS (nur Zeit)
+				/^\d{2}:\d{2}$/, // HH:MM (nur Zeit)
 			];
 
-			if (datePatterns.some((pattern) => pattern.test(value))) {
-				return "date";
+			if (dateTimePatterns.some((pattern) => pattern.test(value))) {
+				const date = new Date(value);
+				if (!isNaN(date.getTime())) {
+					return "date";
+				}
+			}
+
+			// Zusätzlicher Check für Unix Timestamps
+			if (/^\d{10}$/.test(value) || /^\d{13}$/.test(value)) {
+				const timestamp = parseInt(value);
+				const date = new Date(
+					/^\d{10}$/.test(value) ? timestamp * 1000 : timestamp
+				);
+				if (
+					!isNaN(date.getTime()) &&
+					date.getFullYear() > 1970 &&
+					date.getFullYear() < 2100
+				) {
+					return "date";
+				}
 			}
 		}
 
@@ -1334,15 +1244,27 @@ class JSONVisualizer {
 				return boolValue ? "✓ True" : "✗ False";
 
 			case "date":
-				// Einfache Regex-Säuberung - keine Umrechnung!
+				// Einfache Regex-Säuberung ohne Umrechnung
 				if (typeof value === "string") {
-					// Entferne Zeitzonen-Info (Z, +XX:XX) und Sekunden
-					return value
-						.replace(/Z$/, "") // Entferne Z am Ende
-						.replace(/[+-]\d{2}:\d{2}$/, "") // Entferne Timezone +XX:XX
-						.replace(/:\d{2}$/, "") // Entferne Sekunden :XX
-						.replace("T", " "); // Ersetze T mit Leerzeichen
+					// Regex für UTC-Format: "2025-08-08 03:50Z" -> "2025-08-08 03:50"
+					const utcMatch = value.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2})Z?$/);
+					if (utcMatch) {
+						return utcMatch[1];
+					}
+
+					// Regex für Local-Format: "2025-08-08 05:50+02:00" -> "2025-08-08 05:50"
+					const localMatch = value.match(
+						/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2})[\+\-]\d{2}:\d{2}$/
+					);
+					if (localMatch) {
+						return localMatch[1];
+					}
+
+					// Fallback: Original-Wert zurückgeben falls kein Match
+					return value;
 				}
+
+				// Für nicht-String Werte: Original-Wert zurückgeben
 				return value;
 
 			case "array":
@@ -1364,7 +1286,7 @@ class JSONVisualizer {
 		}
 	}
 
-	// Structure Diagram Functions
+	// Structure Diagram Methods
 	toggleStructureDiagram() {
 		const diagramSection = document.getElementById("structureDiagramSection");
 		const isVisible = diagramSection.style.display !== "none";
@@ -1374,213 +1296,418 @@ class JSONVisualizer {
 		} else {
 			diagramSection.style.display = "block";
 			this.generateStructureDiagram();
-
 			// Smooth scroll to diagram
 			diagramSection.scrollIntoView({
 				behavior: "smooth",
+				block: "start",
 			});
 		}
+	}
+
+	toggleDiagramMode() {
+		this.diagramMode = this.diagramMode === "fishbone" ? "tree" : "fishbone";
+		document.getElementById("toggleDiagramMode").innerHTML = 
+			this.diagramMode === "fishbone" 
+				? '<i class="fas fa-exchange-alt"></i> Baum-Ansicht'
+				: '<i class="fas fa-exchange-alt"></i> Fischgräten-Ansicht';
+		this.generateStructureDiagram();
 	}
 
 	generateStructureDiagram() {
 		if (!this.rawJsonData) return;
 
 		const diagramContainer = document.getElementById("structureDiagram");
-		this.currentDiagramMode = this.currentDiagramMode || "fishbone";
+		diagramContainer.innerHTML = "";
 
-		if (this.currentDiagramMode === "fishbone") {
+		if (this.diagramMode === "fishbone") {
 			this.createFishboneDiagram(diagramContainer);
 		} else {
 			this.createTreeDiagram(diagramContainer);
 		}
 	}
 
-	switchDiagramMode() {
-		this.currentDiagramMode =
-			this.currentDiagramMode === "fishbone" ? "tree" : "fishbone";
+	createFishboneDiagram(container) {
+		const width = Math.max(1200, container.clientWidth - 40);
+		const height = 800;
+		
+		// SVG erstellen
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", width);
+		svg.setAttribute("height", height);
+		svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-		const modeButton = document.getElementById("toggleDiagramMode");
-		const modeText =
-			this.currentDiagramMode === "fishbone"
-				? "Zu Baum-Ansicht"
-				: "Zu Fischgräten-Ansicht";
-		modeButton.innerHTML = `<i class="fas fa-exchange-alt"></i> ${modeText}`;
+		// Marker für Pfeilspitzen
+		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+		const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+		marker.setAttribute("id", "arrowhead");
+		marker.setAttribute("markerWidth", "10");
+		marker.setAttribute("markerHeight", "7");
+		marker.setAttribute("refX", "9");
+		marker.setAttribute("refY", "3.5");
+		marker.setAttribute("orient", "auto");
+		
+		const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+		polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+		polygon.setAttribute("fill", "#a3a3a3");
+		
+		marker.appendChild(polygon);
+		defs.appendChild(marker);
+		svg.appendChild(defs);
 
-		this.generateStructureDiagram();
+		// Hauptlinie (Rückgrat des Fischgrätdiagramms)
+		const mainLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		mainLine.setAttribute("x1", 50);
+		mainLine.setAttribute("y1", height / 2);
+		mainLine.setAttribute("x2", width - 50);
+		mainLine.setAttribute("y2", height / 2);
+		mainLine.setAttribute("stroke", "#525252");
+		mainLine.setAttribute("stroke-width", "4");
+		svg.appendChild(mainLine);
+
+		// Analysiere JSON-Struktur mit allen Ebenen
+		const allLevels = this.extractAllLevels(this.rawJsonData);
+		const levelGroups = this.groupByLevel(allLevels);
+		
+		// Hauptknoten (JSON Root)
+		const rootNode = this.createDiagramNode(width - 100, height / 2, "JSON Root", "root");
+		svg.appendChild(rootNode);
+
+		// Erstelle Äste für jede Ebene
+		let currentX = width - 200;
+		const levelSpacing = Math.min(150, (width - 200) / Math.max(Object.keys(levelGroups).length, 1));
+
+		Object.keys(levelGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(levelKey => {
+			const level = parseInt(levelKey);
+			const items = levelGroups[levelKey];
+			
+			if (level === 0) return; // Root-Level überspringen
+			
+			// Berechne Position für diese Ebene
+			const branchX = currentX - (level * levelSpacing);
+			const itemSpacing = Math.min(60, (height - 100) / Math.max(items.length - 1, 1));
+			
+			items.forEach((item, index) => {
+				const isUpper = index % 2 === 0;
+				const branchY = height / 2 + (isUpper ? -1 : 1) * Math.ceil(index / 2) * itemSpacing;
+				
+				// Begrenze Y-Position
+				const clampedY = Math.max(50, Math.min(height - 50, branchY));
+				
+				// Hauptast vom Rückgrat
+				const branchLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+				branchLine.setAttribute("x1", branchX + 50);
+				branchLine.setAttribute("y1", height / 2);
+				branchLine.setAttribute("x2", branchX + 50);
+				branchLine.setAttribute("y2", clampedY);
+				branchLine.setAttribute("stroke", "#6b7280");
+				branchLine.setAttribute("stroke-width", "2");
+				branchLine.setAttribute("class", "diagram-connection");
+				svg.appendChild(branchLine);
+
+				// Horizontale Verbindung
+				const connectionLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+				connectionLine.setAttribute("x1", branchX + 50);
+				connectionLine.setAttribute("y1", clampedY);
+				connectionLine.setAttribute("x2", branchX + 100);
+				connectionLine.setAttribute("y2", clampedY);
+				connectionLine.setAttribute("stroke", "#6b7280");
+				connectionLine.setAttribute("stroke-width", "2");
+				connectionLine.setAttribute("class", "diagram-connection");
+				svg.appendChild(connectionLine);
+
+				// Item-Knoten
+				const nodeType = this.getNodeTypeFromItem(item);
+				const nodeLabel = this.getNodeLabelFromItem(item);
+				const itemNode = this.createDiagramNode(branchX + 130, clampedY, nodeLabel, nodeType, 10);
+				svg.appendChild(itemNode);
+			});
+		});
+
+		// Legende hinzufügen
+		this.addDiagramLegend(container);
+
+		container.appendChild(svg);
 	}
 
-	createFishboneDiagram(container) {
-		const structure = this.analyzeJSONStructure(this.rawJsonData);
+	// Hilfsfunktionen für das erweiterte Diagramm
+	groupByLevel(allLevels) {
+		const groups = {};
+		allLevels.forEach(item => {
+			const level = item._level || 0;
+			if (!groups[level]) {
+				groups[level] = [];
+			}
+			groups[level].push(item);
+		});
+		return groups;
+	}
 
-		container.innerHTML = `
-			<div class="diagram-mode-indicator">
-				<i class="fas fa-fish"></i> Fischgräten-Diagramm
-			</div>
-			<svg width="800" height="500" viewBox="0 0 800 500">
-				<!-- Main spine -->
-				<line x1="100" y1="250" x2="700" y2="250" stroke="#2196F3" stroke-width="3"/>
-				
-				<!-- Main root -->
-				<g id="main-root">
-					<circle cx="720" cy="250" r="8" fill="#4CAF50"/>
-					<text x="730" y="255" font-family="Arial" font-size="12" fill="#333">JSON Root</text>
-				</g>
-				
-				${this.generateFishboneBranches(structure, 100, 250, 600)}
-			</svg>
-		`;
+	getNodeTypeFromItem(item) {
+		if (item._type === "array-item") return "array";
+		if (item._type === "object") return "object";
+		if (item._type === "property") return "property";
+		if (item._type === "primitive") return "property";
+		return "object";
+	}
+
+	getNodeLabelFromItem(item) {
+		if (item._propertyName) return item._propertyName;
+		if (item._path) {
+			const parts = item._path.split(/[.\[\]]/);
+			return parts[parts.length - 1] || "root";
+		}
+		if (item.value !== undefined) return String(item.value).substring(0, 10);
+		return "item";
 	}
 
 	createTreeDiagram(container) {
-		const structure = this.analyzeJSONStructure(this.rawJsonData);
+		const width = Math.max(1400, container.clientWidth - 40);
+		const height = 1000;
+		
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", width);
+		svg.setAttribute("height", height);
+		svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-		container.innerHTML = `
-			<div class="diagram-mode-indicator">
-				<i class="fas fa-tree"></i> Baum-Diagramm
-			</div>
-			<svg width="800" height="600" viewBox="0 0 800 600">
-				${this.generateTreeBranches(structure, 400, 50, 0)}
-			</svg>
-		`;
+		// Marker für Pfeilspitzen
+		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+		const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+		marker.setAttribute("id", "arrowhead");
+		marker.setAttribute("markerWidth", "10");
+		marker.setAttribute("markerHeight", "7");
+		marker.setAttribute("refX", "9");
+		marker.setAttribute("refY", "3.5");
+		marker.setAttribute("orient", "auto");
+		
+		const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+		polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+		polygon.setAttribute("fill", "#a3a3a3");
+		
+		marker.appendChild(polygon);
+		defs.appendChild(marker);
+		svg.appendChild(defs);
+
+		// Analysiere JSON-Struktur mit allen Ebenen
+		const allLevels = this.extractAllLevels(this.rawJsonData);
+		const levelGroups = this.groupByLevel(allLevels);
+		
+		// Root-Knoten
+		const rootX = width / 2;
+		const rootY = 50;
+		const rootNode = this.createDiagramNode(rootX, rootY, "JSON Root", "root");
+		svg.appendChild(rootNode);
+
+		// Erstelle Ebenen von oben nach unten
+		const maxLevel = Math.max(...Object.keys(levelGroups).map(k => parseInt(k)));
+		const levelHeight = Math.min(120, (height - 100) / Math.max(maxLevel, 1));
+
+		Object.keys(levelGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(levelKey => {
+			const level = parseInt(levelKey);
+			const items = levelGroups[levelKey];
+			
+			if (level === 0) return; // Root-Level überspringen
+			
+			const y = rootY + (level * levelHeight);
+			const itemWidth = Math.min(180, (width - 100) / Math.max(items.length, 1));
+			const startX = (width - (items.length * itemWidth)) / 2;
+			
+			items.forEach((item, index) => {
+				const x = startX + (index * itemWidth) + (itemWidth / 2);
+				
+				// Begrenze X-Position
+				const clampedX = Math.max(80, Math.min(width - 80, x));
+				
+				// Verbindung zur vorherigen Ebene (vereinfacht zum Root)
+				const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+				line.setAttribute("x1", rootX);
+				line.setAttribute("y1", rootY + 15);
+				line.setAttribute("x2", clampedX);
+				line.setAttribute("y2", y - 15);
+				line.setAttribute("class", "diagram-connection");
+				svg.appendChild(line);
+
+				// Item-Knoten
+				const nodeType = this.getNodeTypeFromItem(item);
+				const nodeLabel = this.getNodeLabelFromItem(item);
+				const itemNode = this.createDiagramNode(clampedX, y, nodeLabel, nodeType, 10);
+				svg.appendChild(itemNode);
+			});
+		});
+
+		// Legende hinzufügen
+		this.addDiagramLegend(container);
+
+		container.appendChild(svg);
+	}
+		
+		marker.appendChild(polygon);
+		defs.appendChild(marker);
+		svg.appendChild(defs);
+
+		// JSON-Struktur analysieren
+		const structure = this.analyzeJsonStructure(this.rawJsonData);
+		
+		// Root-Knoten
+		const rootX = width / 2;
+		const rootY = 50;
+		const rootNode = this.createDiagramNode(rootX, rootY, "JSON Root", "root");
+		svg.appendChild(rootNode);
+
+		// Erste Ebene - Hauptkategorien
+		const mainKeys = Object.keys(structure);
+		const spacing = Math.min(200, (width - 200) / Math.max(mainKeys.length - 1, 1));
+
+		mainKeys.forEach((key, index) => {
+			const x = 100 + index * spacing;
+			const y = 150;
+
+			// Verbindung vom Root
+			const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			line.setAttribute("x1", rootX);
+			line.setAttribute("y1", rootY + 15);
+			line.setAttribute("x2", x);
+			line.setAttribute("y2", y - 15);
+			line.setAttribute("class", "diagram-connection");
+			svg.appendChild(line);
+
+			// Hauptkategorie-Knoten
+			const categoryType = this.getDataType(structure[key]);
+			const categoryNode = this.createDiagramNode(x, y, key, categoryType);
+			svg.appendChild(categoryNode);
+
+			// Zweite Ebene - Unterkategorien
+			if (categoryType === "array" && structure[key].length > 0) {
+				const subItems = structure[key][0];
+				if (typeof subItems === "object" && subItems !== null) {
+					const subKeys = Object.keys(subItems).slice(0, 6);
+					const subSpacing = 120;
+
+					subKeys.forEach((subKey, subIndex) => {
+						const subX = x + (subIndex - Math.floor(subKeys.length / 2)) * subSpacing;
+						const subY = 280;
+
+						// Verbindung zur Unterkategorie
+						const subLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+						subLine.setAttribute("x1", x);
+						subLine.setAttribute("y1", y + 15);
+						subLine.setAttribute("x2", subX);
+						subLine.setAttribute("y2", subY - 15);
+						subLine.setAttribute("class", "diagram-connection");
+						svg.appendChild(subLine);
+
+						// Unterkategorie-Knoten
+						const subType = this.getDataType(subItems[subKey]);
+						const subNode = this.createDiagramNode(subX, subY, subKey, "property", 11);
+						svg.appendChild(subNode);
+
+						// Dritte Ebene - Wertetypen
+						const valueTypeY = 400;
+						const valueNode = this.createDiagramNode(subX, valueTypeY, subType, "property", 10);
+						
+						// Verbindung zum Wertetyp
+						const valueLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+						valueLine.setAttribute("x1", subX);
+						valueLine.setAttribute("y1", subY + 15);
+						valueLine.setAttribute("x2", subX);
+						valueLine.setAttribute("y2", valueTypeY - 15);
+						valueLine.setAttribute("class", "diagram-connection");
+						svg.appendChild(valueLine);
+						svg.appendChild(valueNode);
+					});
+				}
+			}
+		});
+
+		// Legende hinzufügen
+		this.addDiagramLegend(container);
+
+		container.appendChild(svg);
 	}
 
-	analyzeJSONStructure(data, path = "", maxDepth = 5, currentDepth = 0) {
-		if (currentDepth >= maxDepth) return null;
+	createDiagramNode(x, y, text, type, fontSize = 14) {
+		const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		group.setAttribute("class", `diagram-node ${type}`);
+		group.setAttribute("transform", `translate(${x - 50}, ${y - 15})`);
 
-		const structure = {
-			path: path || "root",
-			type: Array.isArray(data) ? "array" : typeof data,
-			children: [],
-		};
+		// Rechteck
+		const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rect.setAttribute("width", "100");
+		rect.setAttribute("height", "30");
+		group.appendChild(rect);
 
-		if (data && typeof data === "object") {
-			const keys = Array.isArray(data) ? [0, 1, 2] : Object.keys(data);
+		// Text
+		const textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		textElement.setAttribute("x", "50");
+		textElement.setAttribute("y", "15");
+		textElement.setAttribute("font-size", `${fontSize}px`);
+		textElement.textContent = text.length > 12 ? text.substring(0, 10) + "..." : text;
+		group.appendChild(textElement);
 
-			keys.slice(0, 8).forEach((key, index) => {
-				if (data[key] !== undefined) {
-					const childPath = path ? `${path}.${key}` : key.toString();
-					const childStructure = this.analyzeJSONStructure(
-						data[key],
-						childPath,
-						maxDepth,
-						currentDepth + 1
-					);
+		// Tooltip
+		const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+		title.textContent = `${text} (${type})`;
+		group.appendChild(title);
 
-					if (childStructure) {
-						structure.children.push(childStructure);
-					} else {
-						// For max depth, just add type info
-						structure.children.push({
-							path: childPath,
-							type: Array.isArray(data[key]) ? "array" : typeof data[key],
-							children: [],
-						});
-					}
-				}
-			});
+		return group;
+	}
+
+	addDiagramLegend(container) {
+		const legend = document.createElement("div");
+		legend.className = "diagram-legend";
+		
+		const legendItems = [
+			{ color: "#ff6b35", label: "JSON Root" },
+			{ color: "#3b82f6", label: "Array" },
+			{ color: "#10b981", label: "Object" },
+			{ color: "#f3f4f6", label: "Property" }
+		];
+
+		legendItems.forEach(item => {
+			const legendItem = document.createElement("div");
+			legendItem.className = "legend-item";
+			
+			const colorBox = document.createElement("div");
+			colorBox.className = "legend-color";
+			colorBox.style.backgroundColor = item.color;
+			
+			const label = document.createElement("span");
+			label.textContent = item.label;
+			
+			legendItem.appendChild(colorBox);
+			legendItem.appendChild(label);
+			legend.appendChild(legendItem);
+		});
+
+		container.appendChild(legend);
+	}
+
+	analyzeJsonStructure(data) {
+		const structure = {};
+		
+		if (Array.isArray(data)) {
+			return data;
 		}
-
+		
+		for (const key in data) {
+			if (data.hasOwnProperty(key)) {
+				structure[key] = data[key];
+			}
+		}
+		
 		return structure;
 	}
 
-	generateFishboneBranches(structure, startX, centerY, width) {
-		if (!structure.children || structure.children.length === 0) return "";
-
-		let svg = "";
-		const branchHeight = 40;
-		const childCount = structure.children.length;
-
-		structure.children.forEach((child, index) => {
-			const isTop = index % 2 === 0;
-			const branchIndex = Math.floor(index / 2);
-			const x = startX + (width / childCount) * (index + 1);
-			const y = isTop ? centerY - branchHeight : centerY + branchHeight;
-
-			// Branch line
-			svg += `<line x1="${x}" y1="${centerY}" x2="${x}" y2="${y}" stroke="#FF9800" stroke-width="2"/>`;
-
-			// Node
-			const color = this.getTypeColor(child.type);
-			svg += `<circle cx="${x}" cy="${y}" r="6" fill="${color}"/>`;
-
-			// Label
-			const labelY = isTop ? y - 15 : y + 20;
-			svg += `<text x="${x}" y="${labelY}" font-family="Arial" font-size="10" text-anchor="middle" fill="#333">
-				${child.path.split(".").pop()}
-			</text>`;
-
-			// Type label
-			const typeY = isTop ? y - 5 : y + 10;
-			svg += `<text x="${x}" y="${typeY}" font-family="Arial" font-size="8" text-anchor="middle" fill="#666">
-				${child.type}
-			</text>`;
-		});
-
-		return svg;
-	}
-
-	generateTreeBranches(structure, x, y, level) {
-		if (!structure || level > 4) return "";
-
-		let svg = "";
-		const color = this.getTypeColor(structure.type);
-		const levelHeight = 100;
-		const childSpacing = Math.max(
-			120,
-			800 / Math.max(structure.children.length, 1)
-		);
-
-		// Current node
-		svg += `<circle cx="${x}" cy="${y}" r="8" fill="${color}"/>`;
-		svg += `<text x="${x}" y="${
-			y - 15
-		}" font-family="Arial" font-size="12" text-anchor="middle" fill="#333">
-			${structure.path.split(".").pop() || "root"}
-		</text>`;
-		svg += `<text x="${x}" y="${
-			y + 25
-		}" font-family="Arial" font-size="10" text-anchor="middle" fill="#666">
-			${structure.type}
-		</text>`;
-
-		// Children
-		if (structure.children && structure.children.length > 0) {
-			const startX = x - ((structure.children.length - 1) * childSpacing) / 2;
-
-			structure.children.forEach((child, index) => {
-				const childX = startX + index * childSpacing;
-				const childY = y + levelHeight;
-
-				// Connection line
-				svg += `<line x1="${x}" y1="${y + 8}" x2="${childX}" y2="${
-					childY - 8
-				}" stroke="#9E9E9E" stroke-width="1"/>`;
-
-				// Recursive call for child
-				svg += this.generateTreeBranches(child, childX, childY, level + 1);
-			});
-		}
-
-		return svg;
-	}
-
-	getTypeColor(type) {
-		const colors = {
-			object: "#2196F3",
-			array: "#4CAF50",
-			string: "#FF9800",
-			number: "#9C27B0",
-			boolean: "#F44336",
-			null: "#757575",
-		};
-		return colors[type] || "#607D8B";
+	getDataType(value) {
+		if (Array.isArray(value)) return "array";
+		if (value === null) return "null";
+		if (typeof value === "object") return "object";
+		if (typeof value === "boolean") return "boolean";
+		if (typeof value === "number") return "number";
+		if (typeof value === "string") return "string";
+		return "unknown";
 	}
 }
 
-// App initialisieren wenn DOM geladen ist
-document.addEventListener("DOMContentLoaded", () => {
-	new JSONVisualizer();
-});
 // App initialisieren wenn DOM geladen ist
 document.addEventListener("DOMContentLoaded", () => {
 	new JSONVisualizer();

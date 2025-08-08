@@ -301,6 +301,55 @@ header.compact p {
 	color: var(--text-light);
 }
 
+/* Level Selector Styles */
+.level-selector-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--secondary-gray-light);
+	padding: 8px 12px;
+	border-radius: 6px;
+	border: 1px solid var(--border-light);
+	margin-right: 15px;
+}
+
+/* In der Button-Zeile - andere Darstellung */
+.action-buttons .level-selector-container {
+	background: var(--bg-white);
+	border: 1px solid var(--border-medium);
+	padding: 6px 10px;
+	margin-right: 12px;
+}
+
+.level-selector-container label {
+	font-size: 0.9rem;
+	font-weight: 500;
+	color: var(--text-medium);
+	margin: 0;
+	white-space: nowrap;
+}
+
+.level-selector-container label i {
+	color: var(--primary-orange);
+	margin-right: 4px;
+}
+
+#levelSelector {
+	min-width: 120px;
+	padding: 4px 8px;
+	border: 1px solid var(--border-medium);
+	border-radius: 4px;
+	background: var(--bg-white);
+	font-size: 0.9rem;
+}
+
+/* In der Button-Zeile - kompakteres Select */
+.action-buttons #levelSelector {
+	min-width: 100px;
+	padding: 3px 6px;
+	font-size: 0.85rem;
+}
+
 .filter-container {
 	display: grid;
 	grid-template-columns: 150px 120px 1fr 1fr;
@@ -1097,4 +1146,196 @@ select:focus {
 .upload-area:focus-within {
 	border-color: var(--primary-orange);
 	box-shadow: 0 0 0 3px var(--primary-orange-light);
+}
+
+/* Structure Diagram Styles */
+.structure-diagram-section {
+	background: var(--bg-white);
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	margin-bottom: 24px;
+	overflow: hidden;
+}
+
+.diagram-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	background: linear-gradient(
+		135deg,
+		var(--primary-orange),
+		var(--primary-orange-hover)
+	);
+	color: white;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.diagram-header h3 {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0;
+}
+
+.diagram-controls {
+	display: flex;
+	gap: 8px;
+}
+
+.diagram-content {
+	padding: 20px;
+}
+
+.diagram-info {
+	background: var(--secondary-gray-light);
+	padding: 12px 16px;
+	border-radius: 6px;
+	margin-bottom: 20px;
+	border-left: 4px solid var(--primary-orange);
+}
+
+.diagram-info p {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--text-medium);
+}
+
+.structure-diagram {
+	width: 100%;
+	min-height: 400px;
+	overflow: auto;
+	border: 1px solid var(--border-light);
+	border-radius: 6px;
+	background: var(--bg-white);
+	position: relative;
+}
+
+/* SVG Diagram Styles */
+.diagram-node {
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.diagram-node:hover {
+	opacity: 0.8;
+}
+
+.diagram-node rect {
+	stroke: var(--border-medium);
+	stroke-width: 2;
+	rx: 4;
+	ry: 4;
+}
+
+.diagram-node.root rect {
+	fill: var(--primary-orange);
+	stroke: var(--primary-orange-hover);
+}
+
+.diagram-node.array rect {
+	fill: #3b82f6;
+	stroke: #2563eb;
+}
+
+.diagram-node.object rect {
+	fill: #10b981;
+	stroke: #059669;
+}
+
+.diagram-node.property rect {
+	fill: var(--secondary-gray-light);
+	stroke: var(--secondary-gray);
+}
+
+.diagram-node text {
+	font-family: "Segoe UI", sans-serif;
+	font-size: 12px;
+	font-weight: 500;
+	text-anchor: middle;
+	dominant-baseline: central;
+	pointer-events: none;
+}
+
+.diagram-node.root text {
+	fill: white;
+}
+
+.diagram-node.array text {
+	fill: white;
+}
+
+.diagram-node.object text {
+	fill: white;
+}
+
+.diagram-node.property text {
+	fill: var(--text-dark);
+}
+
+.diagram-connection {
+	stroke: var(--border-medium);
+	stroke-width: 2;
+	fill: none;
+	marker-end: url(#arrowhead);
+}
+
+.diagram-legend {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: white;
+	border: 1px solid var(--border-light);
+	border-radius: 6px;
+	padding: 12px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 6px;
+	font-size: 0.85rem;
+}
+
+.legend-color {
+	width: 16px;
+	height: 16px;
+	border-radius: 3px;
+	margin-right: 8px;
+	border: 1px solid var(--border-light);
+}
+
+.legend-item:last-child {
+	margin-bottom: 0;
+}
+
+/* Diagram Mode Indicator */
+.diagram-mode-indicator {
+	padding: 10px 15px;
+	background: var(--primary-orange-light);
+	border: 1px solid var(--primary-orange);
+	border-radius: 6px;
+	margin-bottom: 15px;
+	font-weight: 500;
+	color: var(--text-dark);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.diagram-mode-indicator i {
+	color: var(--primary-orange);
+}
+
+/* Responsive Diagram */
+@media (max-width: 768px) {
+	.diagram-header {
+		flex-direction: column;
+		gap: 12px;
+		text-align: center;
+	}
+
+	.structure-diagram {
+		min-height: 300px;
+	}
 }
