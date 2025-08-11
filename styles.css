@@ -737,8 +737,9 @@ header.compact p {
 .table-section.fullscreen .table-container {
 	flex: 1;
 	max-height: none;
-	height: auto;
-	overflow: auto;
+	height: 0; /* Important: This allows the flex child to grow properly */
+	overflow: auto; /* Enable scrolling */
+	min-height: 0; /* Important for flex children */
 }
 
 /* Fullscreen Controls */
@@ -752,6 +753,7 @@ header.compact p {
 	position: sticky;
 	top: 0;
 	z-index: 100;
+	flex-shrink: 0; /* Prevent the controls from shrinking */
 }
 
 /* Hide other sections when table is in fullscreen */
@@ -770,6 +772,7 @@ body.fullscreen-active .container {
 	position: sticky;
 	top: 0;
 	z-index: 50;
+	background: var(--secondary-gray-light);
 }
 
 .table-section.fullscreen th {
@@ -777,6 +780,8 @@ body.fullscreen-active .container {
 	border-bottom: 2px solid var(--border-medium);
 	font-size: 0.8rem;
 	padding: 12px 16px;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 }
 
 .table-section.fullscreen td {
@@ -790,6 +795,7 @@ body.fullscreen-active .container {
 	padding: 16px 24px;
 	font-size: 0.9rem;
 	font-weight: 600;
+	flex-shrink: 0; /* Prevent the info section from shrinking */
 }
 
 /* Smooth animation for fullscreen toggle */
