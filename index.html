@@ -149,6 +149,9 @@
 						<button id="structureDiagramBtn" class="btn btn-primary">
 							<i class="fas fa-project-diagram"></i> Struktur-Diagramm
 						</button>
+						<button id="fullscreenTableBtn" class="btn btn-success">
+							<i class="fas fa-expand"></i> Vollbild-Tabelle
+						</button>
 						<button id="exportBtn" class="btn btn-secondary">
 							<i class="fas fa-download"></i> CSV Export
 						</button>
@@ -244,6 +247,16 @@
 			</div>
 
 			<div class="table-section" id="tableSection" style="display: none">
+				<!-- Fullscreen Exit Button -->
+				<div
+					class="fullscreen-controls"
+					id="fullscreenControls"
+					style="display: none">
+					<button id="exitFullscreenBtn" class="btn btn-warning">
+						<i class="fas fa-compress"></i> Normale Ansicht
+					</button>
+				</div>
+
 				<div class="table-info">
 					<span id="recordCount"></span>
 					<span id="fileName"></span>

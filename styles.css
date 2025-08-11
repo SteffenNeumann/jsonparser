@@ -447,6 +447,28 @@ header.compact p {
 	border-color: var(--primary-orange-hover);
 }
 
+.btn-success {
+	background: var(--success-green);
+	color: white;
+	border-color: var(--success-green);
+}
+
+.btn-success:hover {
+	background: #15803d;
+	border-color: #15803d;
+}
+
+.btn-warning {
+	background: #f59e0b;
+	color: white;
+	border-color: #f59e0b;
+}
+
+.btn-warning:hover {
+	background: #d97706;
+	border-color: #d97706;
+}
+
 /* Column Manager Section - Postman-Style */
 .column-manager-section {
 	background: var(--bg-white);
@@ -690,6 +712,130 @@ header.compact p {
 	overflow: hidden;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	border: 1px solid var(--border-light);
+	transition: all 0.3s ease;
+}
+
+/* Fullscreen Table Styles */
+.table-section.fullscreen {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9999;
+	border-radius: 0;
+	margin: 0;
+	width: 100vw;
+	height: 100vh;
+	box-shadow: none;
+	border: none;
+	background: var(--bg-white);
+	display: flex;
+	flex-direction: column;
+}
+
+.table-section.fullscreen .table-container {
+	flex: 1;
+	max-height: none;
+	height: auto;
+	overflow: auto;
+}
+
+/* Fullscreen Controls */
+.fullscreen-controls {
+	background: var(--secondary-gray-light);
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--border-light);
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+
+/* Hide other sections when table is in fullscreen */
+body.fullscreen-active .container > *:not(.table-section) {
+	display: none !important;
+}
+
+body.fullscreen-active .container {
+	max-width: none;
+	padding: 0;
+	margin: 0;
+}
+
+/* Enhanced table styles for fullscreen */
+.table-section.fullscreen thead {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+}
+
+.table-section.fullscreen th {
+	background-color: var(--secondary-gray-light);
+	border-bottom: 2px solid var(--border-medium);
+	font-size: 0.8rem;
+	padding: 12px 16px;
+}
+
+.table-section.fullscreen td {
+	padding: 12px 16px;
+	font-size: 0.85rem;
+}
+
+.table-section.fullscreen .table-info {
+	background: var(--bg-white);
+	border-bottom: 2px solid var(--border-light);
+	padding: 16px 24px;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+/* Smooth animation for fullscreen toggle */
+@keyframes fullscreenEnter {
+	from {
+		transform: scale(0.95);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes fullscreenExit {
+	from {
+		transform: scale(1);
+		opacity: 1;
+	}
+	to {
+		transform: scale(0.95);
+		opacity: 0;
+	}
+}
+
+.table-section.fullscreen {
+	animation: fullscreenEnter 0.2s ease-out;
+}
+
+/* Improved scrollbar for fullscreen */
+.table-section.fullscreen .table-container::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.table-section.fullscreen .table-container::-webkit-scrollbar-track {
+	background: var(--secondary-gray-light);
+}
+
+.table-section.fullscreen .table-container::-webkit-scrollbar-thumb {
+	background: var(--secondary-gray);
+	border-radius: 4px;
+}
+
+.table-section.fullscreen .table-container::-webkit-scrollbar-thumb:hover {
+	background: var(--secondary-gray-hover);
 }
 
 .table-info {
@@ -1424,5 +1570,26 @@ select:focus {
 
 	.structure-diagram {
 		min-height: 300px;
+	}
+
+	/* Fullscreen mobile adjustments */
+	.table-section.fullscreen .fullscreen-controls {
+		padding: 10px 12px;
+	}
+
+	.table-section.fullscreen th,
+	.table-section.fullscreen td {
+		padding: 10px 12px;
+		font-size: 0.8rem;
+	}
+
+	.table-section.fullscreen .table-info {
+		padding: 12px 16px;
+		font-size: 0.85rem;
+	}
+
+	.fullscreen-controls .btn {
+		padding: 8px 12px;
+		font-size: 0.8rem;
 	}
 }

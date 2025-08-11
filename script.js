@@ -15,6 +15,7 @@ class JSONVisualizer {
 		this.isDragging = false;
 		this.lastMouseX = 0;
 		this.lastMouseY = 0;
+		this.isFullscreen = false; // Track fullscreen state
 		this.init();
 	}
 
@@ -90,6 +91,20 @@ class JSONVisualizer {
 			.addEventListener("click", () => {
 				console.log("Structure Diagram Button clicked!");
 				this.toggleStructureDiagram();
+			});
+
+		// Fullscreen Table Button
+		document
+			.getElementById("fullscreenTableBtn")
+			.addEventListener("click", () => {
+				this.toggleFullscreenTable();
+			});
+
+		// Exit Fullscreen Button
+		document
+			.getElementById("exitFullscreenBtn")
+			.addEventListener("click", () => {
+				this.exitFullscreenTable();
 			});
 
 		// Diagram Controls
@@ -1151,6 +1166,11 @@ class JSONVisualizer {
 	}
 
 	clearData() {
+		// Exit fullscreen if active
+		if (this.isFullscreen) {
+			this.exitFullscreenTable();
+		}
+
 		this.originalData = [];
 		this.filteredData = [];
 		this.currentSort = { column: null, direction: "asc" };
@@ -1923,6 +1943,96 @@ class JSONVisualizer {
 			const factor = e.deltaY > 0 ? 0.9 : 1.1;
 			this.zoomDiagram(factor);
 		});
+	}
+
+	// Fullscreen Table Functions
+	toggleFullscreenTable() {
+		if (this.isFullscreen) {
+			this.exitFullscreenTable();
+		} else {
+			this.enterFullscreenTable();
+		}
+	}
+
+	enterFullscreenTable() {
+		const tableSection = document.getElementById("tableSection");
+		const fullscreenControls = document.getElementById("fullscreenControls");
+
+		if (!tableSection) return;
+
+		// Add fullscreen classes
+		tableSection.classList.add("fullscreen");
+		document.body.classList.add("fullscreen-active");
+
+		// Show fullscreen controls
+		if (fullscreenControls) {
+			fullscreenControls.style.display = "flex";
+		}
+
+		// Update button text/icon
+		const fullscreenBtn = document.getElementById("fullscreenTableBtn");
+		if (fullscreenBtn) {
+			fullscreenBtn.innerHTML =
+				'<i class="fas fa-compress"></i> Vollbild beenden';
+		}
+
+		this.isFullscreen = true;
+
+		// Prevent body scroll
+		document.body.style.overflow = "hidden";
+
+		// Focus on table for keyboard navigation
+		tableSection.focus();
+
+		// Add ESC key listener
+		this.handleEscapeKey = (e) => {
+			if (e.key === "Escape") {
+				this.exitFullscreenTable();
+			}
+		};
+		document.addEventListener("keydown", this.handleEscapeKey);
+	}
+
+	exitFullscreenTable() {
+		const tableSection = document.getElementById("tableSection");
+		const fullscreenControls = document.getElementById("fullscreenControls");
+
+		if (!tableSection) return;
+
+		// Remove fullscreen classes
+		tableSection.classList.remove("fullscreen");
+		document.body.classList.remove("fullscreen-active");
+
+		// Hide fullscreen controls
+		if (fullscreenControls) {
+			fullscreenControls.style.display = "none";
+		}
+
+		// Update button text/icon
+		const fullscreenBtn = document.getElementById("fullscreenTableBtn");
+		if (fullscreenBtn) {
+			fullscreenBtn.innerHTML =
+				'<i class="fas fa-expand"></i> Vollbild-Tabelle';
+		}
+
+		this.isFullscreen = false;
+
+		// Restore body scroll
+		document.body.style.overflow = "";
+
+		// Remove ESC key listener
+		if (this.handleEscapeKey) {
+			document.removeEventListener("keydown", this.handleEscapeKey);
+			this.handleEscapeKey = null;
+		}
+
+		// Smooth scroll back to table
+		setTimeout(() => {
+			tableSection.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
+		}, 100);
 	}
 }
 
