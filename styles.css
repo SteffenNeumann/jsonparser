@@ -469,6 +469,18 @@ header.compact p {
 	border-color: #d97706;
 }
 
+.btn-white {
+	background: var(--bg-white);
+	color: var(--text-dark);
+	border-color: var(--border-medium);
+}
+
+.btn-white:hover {
+	background: var(--secondary-gray-light);
+	border-color: var(--secondary-gray);
+	color: var(--text-dark);
+}
+
 /* Column Manager Section - Postman-Style */
 .column-manager-section {
 	background: var(--bg-white);
@@ -732,14 +744,16 @@ header.compact p {
 	background: var(--bg-white);
 	display: flex;
 	flex-direction: column;
+	overflow: hidden;
 }
 
 .table-section.fullscreen .table-container {
 	flex: 1;
 	max-height: none;
-	height: 0; /* Important: This allows the flex child to grow properly */
+	height: auto; /* Changed from height: 0 */
 	overflow: auto; /* Enable scrolling */
-	min-height: 0; /* Important for flex children */
+	min-height: 400px; /* Ensure minimum visibility */
+	display: block; /* Ensure block display */
 }
 
 /* Fullscreen Controls */
@@ -765,6 +779,27 @@ body.fullscreen-active .container {
 	max-width: none;
 	padding: 0;
 	margin: 0;
+	height: 100vh;
+	overflow: hidden;
+}
+
+body.fullscreen-active {
+	overflow: hidden;
+}
+
+/* Ensure table content is visible in fullscreen */
+.table-section.fullscreen table {
+	width: 100% !important;
+	border-collapse: collapse !important;
+	background: var(--bg-white) !important;
+	table-layout: auto !important;
+	min-width: 100% !important;
+}
+
+.table-section.fullscreen .table-container {
+	background: var(--bg-white) !important;
+	width: 100% !important;
+	height: 100% !important;
 }
 
 /* Enhanced table styles for fullscreen */
@@ -776,17 +811,75 @@ body.fullscreen-active .container {
 }
 
 .table-section.fullscreen th {
-	background-color: var(--secondary-gray-light);
+	background-color: var(--secondary-gray-light) !important;
 	border-bottom: 2px solid var(--border-medium);
 	font-size: 0.8rem;
 	padding: 12px 16px;
 	backdrop-filter: blur(8px);
 	-webkit-backdrop-filter: blur(8px);
+	color: var(--text-medium) !important;
 }
 
 .table-section.fullscreen td {
-	padding: 12px 16px;
-	font-size: 0.85rem;
+	padding: 12px 16px !important;
+	font-size: 0.85rem !important;
+	border-bottom: 1px solid var(--border-light) !important;
+	border-right: 1px solid var(--border-light) !important;
+	color: var(--text-dark) !important;
+	background: var(--bg-white) !important;
+	height: auto !important;
+	line-height: 1.4 !important;
+	vertical-align: top !important;
+	display: table-cell !important;
+}
+
+.table-section.fullscreen tbody tr {
+	background: var(--bg-white) !important;
+	display: table-row !important;
+	height: auto !important;
+}
+
+.table-section.fullscreen tbody tr:nth-child(even) {
+	background: #fafafa !important;
+}
+
+.table-section.fullscreen tbody tr:hover {
+	background-color: var(--secondary-gray-light) !important;
+}
+
+.table-section.fullscreen tbody tr:hover td {
+	background-color: var(--secondary-gray-light) !important;
+}
+
+/* Ensure data type styles are visible in fullscreen */
+.table-section.fullscreen .data-number {
+	color: var(--secondary-gray) !important;
+	font-weight: 600;
+}
+
+.table-section.fullscreen .data-string {
+	color: var(--text-dark) !important;
+}
+
+.table-section.fullscreen .data-date {
+	color: var(--text-medium) !important;
+}
+
+.table-section.fullscreen .data-boolean.true {
+	color: var(--success-green) !important;
+}
+
+.table-section.fullscreen .data-boolean.false {
+	color: var(--danger-red) !important;
+}
+
+.table-section.fullscreen .data-null {
+	color: var(--text-light) !important;
+	opacity: 0.7;
+}
+
+.table-section.fullscreen .data-array {
+	color: var(--text-medium) !important;
 }
 
 .table-section.fullscreen .table-info {
@@ -796,6 +889,7 @@ body.fullscreen-active .container {
 	font-size: 0.9rem;
 	font-weight: 600;
 	flex-shrink: 0; /* Prevent the info section from shrinking */
+	color: var(--text-dark) !important;
 }
 
 /* Smooth animation for fullscreen toggle */

@@ -1981,6 +1981,30 @@ class JSONVisualizer {
 		// Prevent body scroll
 		document.body.style.overflow = "hidden";
 
+		// Force refresh table display with delay to ensure CSS is applied
+		setTimeout(() => {
+			// Ensure data is present
+			console.log("Filtered data length:", this.filteredData.length);
+			console.log("Visible columns:", this.visibleColumns);
+
+			// Force complete table rebuild
+			this.createTableHeader();
+			this.renderTableBody();
+
+			// Force table visibility
+			const table = document.getElementById("dataTable");
+			const tableContainer = document.querySelector(".table-container");
+			if (table) {
+				table.style.display = "table";
+				table.style.width = "100%";
+				table.style.visibility = "visible";
+			}
+			if (tableContainer) {
+				tableContainer.style.display = "block";
+				tableContainer.style.visibility = "visible";
+			}
+		}, 200);
+
 		// Focus on table for keyboard navigation
 		tableSection.focus();
 
@@ -2019,6 +2043,9 @@ class JSONVisualizer {
 
 		// Restore body scroll
 		document.body.style.overflow = "";
+
+		// Re-render table to ensure data is visible in normal mode
+		this.renderTableBody();
 
 		// Remove ESC key listener
 		if (this.handleEscapeKey) {
