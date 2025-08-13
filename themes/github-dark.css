@@ -615,3 +615,115 @@
 	background: var(--bg-color-tertiary);
 	color: var(--text-primary);
 }
+
+/* Fullscreen Enhanced Table Styles (Extended Table in Focus Mode) */
+[data-theme="github-dark"] .table-section.fullscreen {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .table-container {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen table {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen thead {
+	background-color: var(--bg-color-tertiary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen th {
+	background-color: var(--bg-color-tertiary) !important;
+	color: var(--text-secondary) !important;
+	border-bottom: 2px solid var(--border-default) !important;
+	border-right: 1px solid var(--border-default) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen th:hover {
+	background-color: var(--bg-color-muted) !important;
+	color: var(--text-primary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen th i {
+	color: var(--text-muted) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen th:hover i {
+	color: var(--accent-fg) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen td {
+	background: var(--bg-color-primary) !important;
+	color: var(--text-primary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+	border-right: 1px solid var(--border-default) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen tbody tr {
+	background: var(--bg-color-primary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen tbody tr:nth-child(even) {
+	background: var(--bg-color-secondary) !important;
+}
+
+[data-theme="github-dark"]
+	.table-section.fullscreen
+	tbody
+	tr:nth-child(even)
+	td {
+	background: var(--bg-color-secondary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen tbody tr:hover {
+	background-color: var(--bg-color-muted) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen tbody tr:hover td {
+	background-color: var(--bg-color-muted) !important;
+}
+
+/* Enhanced Data Type Styles for Fullscreen */
+[data-theme="github-dark"] .table-section.fullscreen .data-number {
+	color: var(--success-fg) !important;
+	font-weight: 600;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-string {
+	color: var(--text-primary) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-date {
+	color: var(--warning-fg) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-boolean.true {
+	color: var(--success-fg) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-boolean.false {
+	color: var(--danger-fg) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-null {
+	color: var(--text-muted) !important;
+}
+
+[data-theme="github-dark"] .table-section.fullscreen .data-array {
+	color: var(--done-fg) !important;
+}
+
+/* Fullscreen Controls in Dark Mode */
+[data-theme="github-dark"] .fullscreen-controls {
+	background: var(--bg-color-tertiary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+}
+
+/* Table Info in Fullscreen */
+[data-theme="github-dark"] .table-section.fullscreen .table-info {
+	background: var(--bg-color-tertiary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+	color: var(--text-primary) !important;
+}

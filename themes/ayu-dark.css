@@ -601,6 +601,120 @@
 	background-color: var(--bg-color-accent) !important;
 }
 
+/* Enhanced Fullscreen Table Styles (Extended Table in Focus Mode) */
+[data-theme="ayu-dark"] .table-section.fullscreen {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .table-container {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen table {
+	background: var(--bg-color-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen thead {
+	background-color: var(--bg-color-tertiary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen th {
+	background-color: var(--bg-color-tertiary) !important;
+	color: var(--text-secondary) !important;
+	border-bottom: 2px solid var(--border-accent) !important;
+	border-right: 1px solid var(--border-accent) !important;
+	font-weight: 600;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen th:hover {
+	background-color: var(--bg-color-accent) !important;
+	color: var(--accent-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen th i {
+	color: var(--text-muted) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen th:hover i {
+	color: var(--accent-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen td {
+	background: var(--bg-color-primary) !important;
+	color: var(--text-primary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+	border-right: 1px solid var(--border-default) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen tbody tr {
+	background: var(--bg-color-primary) !important;
+	border-bottom: 1px solid var(--border-default) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen tbody tr:nth-child(even) {
+	background: var(--bg-color-secondary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen tbody tr:nth-child(even) td {
+	background: var(--bg-color-secondary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen tbody tr:hover {
+	background-color: var(--bg-color-accent) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen tbody tr:hover td {
+	background-color: var(--bg-color-accent) !important;
+}
+
+/* Enhanced Data Type Styles for Fullscreen */
+[data-theme="ayu-dark"] .table-section.fullscreen .data-number {
+	color: var(--success) !important;
+	font-weight: 600;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-string {
+	color: var(--text-primary) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-date {
+	color: var(--warning) !important;
+	font-weight: 500;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-boolean.true {
+	color: var(--success) !important;
+	font-weight: 600;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-boolean.false {
+	color: var(--danger) !important;
+	font-weight: 600;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-null {
+	color: var(--text-muted) !important;
+}
+
+[data-theme="ayu-dark"] .table-section.fullscreen .data-array {
+	color: var(--ayu-pink) !important;
+	font-weight: 500;
+}
+
+/* Fullscreen Controls in Ayu Dark Mode */
+[data-theme="ayu-dark"] .fullscreen-controls {
+	background: var(--bg-color-tertiary) !important;
+	border-bottom: 1px solid var(--border-accent) !important;
+}
+
+/* Table Info in Fullscreen */
+[data-theme="ayu-dark"] .table-section.fullscreen .table-info {
+	background: var(--bg-color-tertiary) !important;
+	border-bottom: 1px solid var(--border-accent) !important;
+	color: var(--text-primary) !important;
+	font-weight: 500;
+}
+
 /* Error Section */
 [data-theme="ayu-dark"] .error-section {
 	background: var(--bg-color-secondary);
