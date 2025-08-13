@@ -16,12 +16,15 @@ class JSONVisualizer {
 		this.lastMouseX = 0;
 		this.lastMouseY = 0;
 		this.isFullscreen = false; // Track fullscreen state
+		this.currentTheme = localStorage.getItem("selectedTheme") || "light";
 		this.init();
 	}
 
 	init() {
 		this.setupEventListeners();
 		this.setupDragAndDrop();
+		this.setupThemeSelector();
+		this.applyTheme(this.currentTheme);
 	}
 
 	setupEventListeners() {
@@ -2060,6 +2063,43 @@ class JSONVisualizer {
 				block: "start",
 			});
 		}, 100);
+	}
+
+	// Theme Management
+	setupThemeSelector() {
+		const themeSelect = document.getElementById("themeSelect");
+		if (themeSelect) {
+			// Set initial value
+			themeSelect.value = this.currentTheme;
+
+			// Add event listener
+			themeSelect.addEventListener("change", (e) => {
+				this.changeTheme(e.target.value);
+			});
+		}
+	}
+
+	changeTheme(theme) {
+		this.currentTheme = theme;
+		this.applyTheme(theme);
+		localStorage.setItem("selectedTheme", theme);
+	}
+
+	applyTheme(theme) {
+		// Remove any existing theme attributes
+		document.documentElement.removeAttribute("data-theme");
+		document.body.removeAttribute("data-theme");
+
+		// Set the theme attribute on the document root (html element)
+		document.documentElement.setAttribute("data-theme", theme);
+
+		// Update theme selector if it exists
+		const themeSelect = document.getElementById("themeSelect");
+		if (themeSelect) {
+			themeSelect.value = theme;
+		}
+
+		console.log(`Theme applied: ${theme}`);
 	}
 }
 
