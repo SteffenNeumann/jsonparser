@@ -40,13 +40,18 @@
 					<i class="fas fa-cloud-upload-alt"></i>
 					<h3>JSON-Datei hochladen</h3>
 					<p>
-						Ziehen Sie eine JSON-Datei hierher oder klicken Sie zum Auswählen
+						Ziehen Sie eine JSON-Datei hierher oder wählen Sie eine Datei aus
 					</p>
-					<input type="file" id="fileInput" accept=".json" hidden />
+					
+					<!-- iOS-kompatibler sichtbarer File Input -->
+					<input type="file" id="fileInput" accept=".json" class="ios-file-input" />
+					
+					<!-- Versteckter Fallback für Desktop -->
+					<input type="file" id="fileInputHidden" accept=".json" hidden />
 					<button
 						class="upload-btn"
-						onclick="document.getElementById('fileInput').click()">
-						<i class="fas fa-folder-open"></i> Datei auswählen
+						onclick="document.getElementById('fileInputHidden').click()">
+						<i class="fas fa-folder-open"></i> Alternative: Datei auswählen
 					</button>
 				</div>
 			</div>

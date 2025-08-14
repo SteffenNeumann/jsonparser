@@ -29,6 +29,7 @@ class JSONVisualizer {
 		this.applyTheme(this.currentTheme);
 		this.setupGlobalErrorHandling();
 		this.setupDebugConsole();
+		this.setupSimpleFileInputs(); // Neue einfache iOS-Implementierung
 	}
 
 	setupGlobalErrorHandling() {
@@ -555,6 +556,48 @@ class JSONVisualizer {
 			console.log("File Input Monitoring beendet nach 60 Sekunden");
 			clearInterval(monitorInterval);
 		}, 60000);
+	}
+
+	// NEUE EINFACHE iOS-KOMPATIBLE FILE INPUT IMPLEMENTIERUNG
+	setupSimpleFileInputs() {
+		console.log("=== SETUP SIMPLE FILE INPUTS FÜR iOS ===");
+		
+		// Hauptsächlicher sichtbarer File Input
+		const fileInput = document.getElementById("fileInput");
+		if (fileInput) {
+			console.log("Sichtbarer File Input gefunden, registriere Event-Listener");
+			fileInput.addEventListener("change", (e) => {
+				console.log("=== SICHTBARER FILE INPUT CHANGE ===");
+				this.handleFileInputChange(e);
+			});
+		}
+		
+		// Fallback versteckter File Input
+		const fileInputHidden = document.getElementById("fileInputHidden");
+		if (fileInputHidden) {
+			console.log("Versteckter File Input gefunden, registriere Event-Listener");
+			fileInputHidden.addEventListener("change", (e) => {
+				console.log("=== VERSTECKTER FILE INPUT CHANGE ===");
+				this.handleFileInputChange(e);
+			});
+		}
+	}
+
+	// Vereinfachte File Input Change Handler
+	handleFileInputChange(e) {
+		console.log("=== HANDLE FILE INPUT CHANGE ===");
+		console.log("Event target:", e.target.id);
+		console.log("Files array:", e.target.files);
+		console.log("Files length:", e.target.files ? e.target.files.length : 0);
+		
+		if (e.target.files && e.target.files.length > 0) {
+			const file = e.target.files[0];
+			console.log("Datei gefunden:", file.name, file.size, "bytes");
+			console.log("Rufe handleFileSelect auf...");
+			this.handleFileSelect(file);
+		} else {
+			console.warn("Keine Datei im Change Event gefunden");
+		}
 	}
 
 	setupDragAndDrop() {

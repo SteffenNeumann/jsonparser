@@ -1857,3 +1857,47 @@ select:focus {
 		left: 20px;
 	}
 }
+
+/* iOS-kompatibler File Input */
+.ios-file-input {
+	width: 100%;
+	max-width: 300px;
+	padding: 12px;
+	margin: 16px 0;
+	border: 2px dashed #0969da;
+	border-radius: 8px;
+	background: #f8f9fa;
+	font-size: 16px; /* Wichtig für iOS - verhindert Zoom */
+	color: #0969da;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.ios-file-input:hover,
+.ios-file-input:focus {
+	border-color: #0550ae;
+	background: #e7f3ff;
+	outline: none;
+}
+
+.ios-file-input::-webkit-file-upload-button {
+	background: #0969da;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 6px;
+	margin-right: 12px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.ios-file-input::-webkit-file-upload-button:hover {
+	background: #0550ae;
+}
+
+/* Verstecke den alternativen Button auf kleinen Bildschirmen */
+@media (max-width: 768px) {
+	.upload-btn {
+		display: none;
+	}
+}
