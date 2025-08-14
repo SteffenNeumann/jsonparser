@@ -33,38 +33,38 @@ class JSONVisualizer {
 
 	setupGlobalErrorHandling() {
 		// Global Error Handler für besseres Debugging
-		window.addEventListener('error', (event) => {
-			console.error('Global Error:', event.error);
-			console.error('Error details:', {
+		window.addEventListener("error", (event) => {
+			console.error("Global Error:", event.error);
+			console.error("Error details:", {
 				message: event.message,
 				filename: event.filename,
 				lineno: event.lineno,
-				colno: event.colno
+				colno: event.colno,
 			});
 		});
 
 		// Promise Rejection Handler
-		window.addEventListener('unhandledrejection', (event) => {
-			console.error('Unhandled Promise Rejection:', event.reason);
+		window.addEventListener("unhandledrejection", (event) => {
+			console.error("Unhandled Promise Rejection:", event.reason);
 		});
 	}
 
 	setupDebugConsole() {
 		// Debug Toggle Button
-		const debugToggleBtn = document.getElementById('debugToggleBtn');
-		const debugConsole = document.getElementById('debugConsole');
-		const clearDebugBtn = document.getElementById('clearDebugBtn');
-		const closeDebugBtn = document.getElementById('closeDebugBtn');
+		const debugToggleBtn = document.getElementById("debugToggleBtn");
+		const debugConsole = document.getElementById("debugConsole");
+		const clearDebugBtn = document.getElementById("clearDebugBtn");
+		const closeDebugBtn = document.getElementById("closeDebugBtn");
 
-		debugToggleBtn.addEventListener('click', () => {
+		debugToggleBtn.addEventListener("click", () => {
 			this.toggleDebugConsole();
 		});
 
-		clearDebugBtn.addEventListener('click', () => {
+		clearDebugBtn.addEventListener("click", () => {
 			this.clearDebugMessages();
 		});
 
-		closeDebugBtn.addEventListener('click', () => {
+		closeDebugBtn.addEventListener("click", () => {
 			this.hideDebugConsole();
 		});
 
@@ -80,22 +80,22 @@ class JSONVisualizer {
 
 		console.log = (...args) => {
 			originalLog.apply(console, args);
-			this.addDebugMessage('log', args.join(' '));
+			this.addDebugMessage("log", args.join(" "));
 		};
 
 		console.warn = (...args) => {
 			originalWarn.apply(console, args);
-			this.addDebugMessage('warn', args.join(' '));
+			this.addDebugMessage("warn", args.join(" "));
 		};
 
 		console.error = (...args) => {
 			originalError.apply(console, args);
-			this.addDebugMessage('error', args.join(' '));
+			this.addDebugMessage("error", args.join(" "));
 		};
 
 		console.info = (...args) => {
 			originalInfo.apply(console, args);
-			this.addDebugMessage('info', args.join(' '));
+			this.addDebugMessage("info", args.join(" "));
 		};
 	}
 
@@ -104,11 +104,11 @@ class JSONVisualizer {
 		const debugMessage = {
 			type,
 			message,
-			timestamp
+			timestamp,
 		};
 
 		this.debugMessages.push(debugMessage);
-		
+
 		// Begrenze die Anzahl der Nachrichten
 		if (this.debugMessages.length > 100) {
 			this.debugMessages.shift();
@@ -118,48 +118,93 @@ class JSONVisualizer {
 	}
 
 	updateDebugConsole() {
-		const debugContent = document.getElementById('debugContent');
+		const debugContent = document.getElementById("debugContent");
 		if (!debugContent) return;
 
-		debugContent.innerHTML = this.debugMessages.map(msg => `
+		debugContent.innerHTML = this.debugMessages
+			.map(
+				(msg) => `
 			<div class="debug-message debug-${msg.type}">
 				<span style="opacity: 0.7;">${msg.timestamp}</span> ${msg.message}
 			</div>
-		`).join('');
+		`
+			)
+			.join("");
 
 		// Scroll to bottom
 		debugContent.scrollTop = debugContent.scrollHeight;
 	}
 
 	toggleDebugConsole() {
-		const debugConsole = document.getElementById('debugConsole');
+		const debugConsole = document.getElementById("debugConsole");
 		this.debugConsoleVisible = !this.debugConsoleVisible;
-		debugConsole.style.display = this.debugConsoleVisible ? 'block' : 'none';
-		
+		debugConsole.style.display = this.debugConsoleVisible ? "block" : "none";
+
 		if (this.debugConsoleVisible) {
-			this.addDebugMessage('info', 'Debug Console aktiviert');
+			this.addDebugMessage("info", "Debug Console aktiviert");
 		}
 	}
 
 	hideDebugConsole() {
-		const debugConsole = document.getElementById('debugConsole');
+		const debugConsole = document.getElementById("debugConsole");
 		this.debugConsoleVisible = false;
-		debugConsole.style.display = 'none';
+		debugConsole.style.display = "none";
 	}
 
 	clearDebugMessages() {
 		this.debugMessages = [];
 		this.updateDebugConsole();
-		this.addDebugMessage('info', 'Debug Console geleert');
+		this.addDebugMessage("info", "Debug Console geleert");
 	}
 
 	setupEventListeners() {
 		console.log("Setting up event listeners...");
 
-		// File Input Event
-		document.getElementById("fileInput").addEventListener("change", (e) => {
-			this.handleFileSelect(e.target.files[0]);
-		});
+		// File Input Event mit Debug-Logging
+		const fileInput = document.getElementById("fileInput");
+		if (fileInput) {
+			console.log("File Input Event-Listener wird registriert");
+			fileInput.addEventListener("change", (e) => {
+				console.log("=== FILE INPUT CHANGE EVENT AUSGELÖST ===");
+				console.log("Event:", e);
+				console.log("Target:", e.target);
+				console.log("Files:", e.target.files);
+				console.log("Anzahl Dateien:", e.target.files ? e.target.files.length : "keine");
+				
+				if (e.target.files && e.target.files.length > 0) {
+					const file = e.target.files[0];
+					console.log("Ausgewählte Datei:", {
+						name: file.name,
+						size: file.size,
+						type: file.type,
+						lastModified: file.lastModified
+					});
+					this.handleFileSelect(file);
+				} else {
+					console.warn("Keine Datei ausgewählt oder files array leer");
+				}
+			});
+			console.log("File Input Event-Listener erfolgreich registriert");
+		} else {
+			console.error("File Input Element nicht gefunden!");
+		}
+
+		// Upload Button Click Event mit Debug-Logging
+		const uploadBtn = document.querySelector(".upload-btn");
+		if (uploadBtn) {
+			console.log("Upload Button Event-Listener wird registriert");
+			uploadBtn.addEventListener("click", () => {
+				console.log("=== UPLOAD BUTTON GEKLICKT ===");
+				if (fileInput) {
+					console.log("File Input wird ausgelöst");
+					fileInput.click();
+				} else {
+					console.error("File Input nicht verfügbar für Button-Klick");
+				}
+			});
+		} else {
+			console.error("Upload Button nicht gefunden!");
+		}
 
 		// Search Input Event
 		document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -300,10 +345,23 @@ class JSONVisualizer {
 				this.toggleColumnManager();
 			});
 
-		// Upload Area Click
-		document.getElementById("uploadArea").addEventListener("click", () => {
-			document.getElementById("fileInput").click();
-		});
+		// Upload Area Click mit Debug-Logging
+		const uploadArea = document.getElementById("uploadArea");
+		if (uploadArea) {
+			console.log("Upload Area Event-Listener wird registriert");
+			uploadArea.addEventListener("click", () => {
+				console.log("=== UPLOAD AREA GEKLICKT ===");
+				const fileInput = document.getElementById("fileInput");
+				if (fileInput) {
+					console.log("Trigger File Input Click");
+					fileInput.click();
+				} else {
+					console.error("File Input für Upload Area nicht gefunden!");
+				}
+			});
+		} else {
+			console.error("Upload Area Element nicht gefunden!");
+		}
 	}
 
 	setupDragAndDrop() {
@@ -351,45 +409,101 @@ class JSONVisualizer {
 	}
 
 	handleFileSelect(file) {
-		if (!file) return;
+		console.log("=== HANDLE FILE SELECT AUFGERUFEN ===");
+		console.log("File parameter:", file);
+		
+		if (!file) {
+			console.error("Keine Datei übergeben!");
+			return;
+		}
+
+		console.log("Datei Details:", {
+			name: file.name,
+			size: file.size,
+			type: file.type
+		});
 
 		if (!file.name.toLowerCase().endsWith(".json")) {
+			console.error("Datei ist keine JSON-Datei:", file.name);
 			this.showError("Bitte wählen Sie eine gültige JSON-Datei aus.");
 			return;
 		}
 
+		console.log("JSON-Datei erkannt, prüfe Größe...");
+
 		// iOS-spezifische Dateigrößenprüfung
 		const maxFileSize = 10 * 1024 * 1024; // 10MB für iOS
 		if (file.size > maxFileSize) {
-			this.showError(`Datei zu groß für mobile Geräte. Maximale Größe: ${Math.round(maxFileSize / 1024 / 1024)}MB`);
+			console.error("Datei zu groß:", file.size, "bytes, Maximum:", maxFileSize);
+			this.showError(
+				`Datei zu groß für mobile Geräte. Maximale Größe: ${Math.round(
+					maxFileSize / 1024 / 1024
+				)}MB`
+			);
 			return;
 		}
 
+		console.log("Datei-Größe OK, starte FileReader...");
+
 		const reader = new FileReader();
+		
+		reader.onloadstart = () => {
+			console.log("FileReader: Laden gestartet");
+		};
+		
+		reader.onprogress = (e) => {
+			if (e.lengthComputable) {
+				const percent = (e.loaded / e.total) * 100;
+				console.log(`FileReader: ${percent.toFixed(1)}% geladen`);
+			}
+		};
+		
 		reader.onload = (e) => {
+			console.log("FileReader: Datei vollständig geladen");
+			console.log("Content length:", e.target.result ? e.target.result.length : 0);
+			
 			try {
-				console.log("Parsing JSON file...");
+				console.log("Starte JSON-Parsing...");
 				const jsonData = JSON.parse(e.target.result);
-				console.log("JSON parsed successfully, processing data...");
+				console.log("JSON erfolgreich geparst, Datentyp:", typeof jsonData);
+				console.log("JSON Struktur:", Array.isArray(jsonData) ? "Array" : "Object");
+				if (Array.isArray(jsonData)) {
+					console.log("Array-Länge:", jsonData.length);
+				}
+				
+				console.log("Rufe processJSONData auf...");
 				this.processJSONData(jsonData, file.name);
 			} catch (error) {
-				console.error("JSON Parse Error:", error);
+				console.error("JSON Parse Error Details:", {
+					name: error.name,
+					message: error.message,
+					stack: error.stack
+				});
 				this.showError("Fehler beim Parsen der JSON-Datei: " + error.message);
 			}
 		};
 		
-		reader.onerror = () => {
-			console.error("FileReader Error");
+		reader.onerror = (e) => {
+			console.error("FileReader Error Details:", e);
 			this.showError("Fehler beim Lesen der Datei.");
 		};
-		
+
+		reader.onabort = () => {
+			console.error("FileReader wurde abgebrochen");
+		};
+
+		console.log("Starte readAsText...");
 		reader.readAsText(file);
+		console.log("readAsText aufgerufen, warte auf Callback...");
 	}
 
 	processJSONData(data, fileName) {
 		try {
-			console.log("Processing JSON data...", { type: typeof data, isArray: Array.isArray(data) });
-			
+			console.log("Processing JSON data...", {
+				type: typeof data,
+				isArray: Array.isArray(data),
+			});
+
 			// Verstecke Error Section
 			document.getElementById("errorSection").style.display = "none";
 
@@ -398,7 +512,8 @@ class JSONVisualizer {
 
 			// iOS-spezifische Größenprüfung
 			const dataString = JSON.stringify(data);
-			if (dataString.length > 2 * 1024 * 1024) { // 2MB String-Grenze für iOS
+			if (dataString.length > 2 * 1024 * 1024) {
+				// 2MB String-Grenze für iOS
 				console.warn("Large dataset detected, limiting processing...");
 			}
 
@@ -427,57 +542,56 @@ class JSONVisualizer {
 						}));
 						processedData = processedData.concat(enrichedData);
 					});
-			} else if (arrayKeys.length === 1) {
-				// Ein Array gefunden - verwende es
-				processedData = data[arrayKeys[0]];
+				} else if (arrayKeys.length === 1) {
+					// Ein Array gefunden - verwende es
+					processedData = data[arrayKeys[0]];
+				} else {
+					// Kein Array gefunden - konvertiere das Objekt selbst
+					processedData = [data];
+				}
 			} else {
-				// Kein Array gefunden - konvertiere das Objekt selbst
-				processedData = [data];
+				this.showError(
+					"Die JSON-Struktur wird nicht unterstützt. Erwartet wird ein Array oder ein Objekt mit Arrays."
+				);
+				return;
 			}
-		} else {
-			this.showError(
-				"Die JSON-Struktur wird nicht unterstützt. Erwartet wird ein Array oder ein Objekt mit Arrays."
+
+			// Filtere nur Objekte
+			processedData = processedData.filter(
+				(item) => typeof item === "object" && item !== null
 			);
-			return;
-		}
 
-		// Filtere nur Objekte
-		processedData = processedData.filter(
-			(item) => typeof item === "object" && item !== null
-		);
-
-		if (processedData.length === 0) {
-			this.showError("Keine gültigen Datensätze in der JSON-Datei gefunden.");
-			return;
-		}
-
-		// iOS-spezifisch: Begrenze die Anzahl der verarbeiteten Items
-		const maxItems = 1000; // Limit für iOS
-		if (processedData.length > maxItems) {
-			console.warn(`Dataset zu groß für iOS, begrenzt auf ${maxItems} Items`);
-			processedData = processedData.slice(0, maxItems);
-		}
-
-		// Flatte verschachtelte Objekte mit Error-Handling
-		console.log("Flattening objects...");
-		processedData = processedData.map((item, index) => {
-			try {
-				return this.flattenObject(item);
-			} catch (error) {
-				console.error(`Error flattening item ${index}:`, error);
-				return item; // Fallback: verwende original item
+			if (processedData.length === 0) {
+				this.showError("Keine gültigen Datensätze in der JSON-Datei gefunden.");
+				return;
 			}
-		});
 
-		console.log("Data processing completed:", processedData.length, "items");
+			// iOS-spezifisch: Begrenze die Anzahl der verarbeiteten Items
+			const maxItems = 1000; // Limit für iOS
+			if (processedData.length > maxItems) {
+				console.warn(`Dataset zu groß für iOS, begrenzt auf ${maxItems} Items`);
+				processedData = processedData.slice(0, maxItems);
+			}
 
-		this.originalData = processedData;
-		this.filteredData = [...processedData];
+			// Flatte verschachtelte Objekte mit Error-Handling
+			console.log("Flattening objects...");
+			processedData = processedData.map((item, index) => {
+				try {
+					return this.flattenObject(item);
+				} catch (error) {
+					console.error(`Error flattening item ${index}:`, error);
+					return item; // Fallback: verwende original item
+				}
+			});
 
-		this.createTable(fileName);
-		this.showTableSection();
-		this.showLevelSelector(); // Zeige die Ebenen-Auswahl
-		
+			console.log("Data processing completed:", processedData.length, "items");
+
+			this.originalData = processedData;
+			this.filteredData = [...processedData];
+
+			this.createTable(fileName);
+			this.showTableSection();
+			this.showLevelSelector(); // Zeige die Ebenen-Auswahl
 		} catch (error) {
 			console.error("Error in processJSONData:", error);
 			this.showError("Fehler beim Verarbeiten der Daten: " + error.message);
@@ -603,7 +717,7 @@ class JSONVisualizer {
 
 	flattenObject(obj, prefix = "", depth = 0) {
 		const flattened = {};
-		
+
 		// iOS-spezifisch: Begrenze Rekursionstiefe
 		const maxDepth = 5;
 		if (depth > maxDepth) {
@@ -622,7 +736,10 @@ class JSONVisualizer {
 				) {
 					// Rekursiv für verschachtelte Objekte mit Tiefenbegrenzung
 					try {
-						Object.assign(flattened, this.flattenObject(value, newKey, depth + 1));
+						Object.assign(
+							flattened,
+							this.flattenObject(value, newKey, depth + 1)
+						);
 					} catch (error) {
 						console.warn("Error flattening nested object:", error);
 						flattened[newKey] = "[Konvertierungsfehler]";
@@ -650,7 +767,7 @@ class JSONVisualizer {
 	createTable(fileName) {
 		try {
 			console.log("Creating table for:", fileName);
-			
+
 			// Hole alle einzigartigen Spalten
 			const columns = [...new Set(this.originalData.flatMap(Object.keys))];
 			console.log("Found columns:", columns.length, columns);
@@ -669,19 +786,20 @@ class JSONVisualizer {
 			// Erstelle Spalten-Filter Dropdown
 			this.populateColumnFilter(this.columnOrder);
 
-		// Erstelle Tabellen-Body
-		this.renderTableBody();
+			// Erstelle Tabellen-Body
+			this.renderTableBody();
 
-		// Update Dashboard und Info
-		this.updateDashboard(columns);
-		this.updateTableInfo(fileName);
-		
-		console.log("Table created successfully");
+			// Update Dashboard und Info
+			this.updateDashboard(columns);
+			this.updateTableInfo(fileName);
+
+			console.log("Table created successfully");
 		} catch (error) {
 			console.error("Error in createTable:", error);
 			this.showError("Fehler beim Erstellen der Tabelle: " + error.message);
 		}
-	}	initializeColumns(columns) {
+	}
+	initializeColumns(columns) {
 		// Initialisiere visibleColumns und columnOrder beim ersten Laden
 		if (this.visibleColumns.length === 0) {
 			this.visibleColumns = [...columns];
@@ -2309,7 +2427,35 @@ class JSONVisualizer {
 	}
 }
 
+// SOFORTIGER TEST - Diese Zeile sollte sofort ausgeführt werden
+console.log("=== JSON VISUALIZER SCRIPT GELADEN ===");
+alert("JavaScript lädt - Debug Test"); // Temporärer Test
+
 // App initialisieren wenn DOM geladen ist
 document.addEventListener("DOMContentLoaded", () => {
-	new JSONVisualizer();
+	console.log("=== DOM CONTENT LOADED ===");
+	alert("DOM geladen - initialisiere App"); // Temporärer Test
+	try {
+		const app = new JSONVisualizer();
+		console.log("=== JSON VISUALIZER INITIALISIERT ===");
+		alert("App erfolgreich initialisiert"); // Temporärer Test
+	} catch (error) {
+		console.error("=== FEHLER BEI INITIALISIERUNG ===", error);
+		alert("FEHLER: " + error.message); // Temporärer Test
+	}
 });
+
+// Fallback: Initialisierung auch wenn DOM bereits geladen ist
+if (document.readyState === "loading") {
+	// DOM wird noch geladen, warte auf DOMContentLoaded
+	console.log("DOM wird noch geladen...");
+} else {
+	// DOM ist bereits geladen
+	console.log("DOM bereits geladen, initialisiere sofort...");
+	try {
+		const app = new JSONVisualizer();
+		console.log("=== JSON VISUALIZER SOFORT INITIALISIERT ===");
+	} catch (error) {
+		console.error("=== FEHLER BEI SOFORT-INITIALISIERUNG ===", error);
+	}
+}
