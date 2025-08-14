@@ -2035,6 +2035,47 @@ class JSONVisualizer {
 		});
 	}
 
+	// Apply all current filters
+	applyCurrentFilters() {
+		// Apply global search filter first
+		const searchTerm = document.getElementById("searchInput").value;
+		if (searchTerm.trim()) {
+			this.filterData(searchTerm);
+		} else {
+			this.filteredData = [...this.originalData];
+		}
+
+		// Apply column-specific filters
+		const selectedColumn = document.getElementById("columnFilter").value;
+		const filterOperator = document.getElementById("filterOperator").value;
+		const filterValue1 = document.getElementById("columnSearchInput").value;
+		const filterValue2 = document.getElementById("columnSearchInput2").value;
+
+		if (
+			selectedColumn &&
+			(filterValue1.trim() ||
+				filterOperator === "empty" ||
+				filterOperator === "not_empty")
+		) {
+			let data = [...this.filteredData];
+
+			data = data.filter((row) => {
+				const cellValue = row[selectedColumn];
+				return this.applyFilterOperator(
+					cellValue,
+					filterOperator,
+					filterValue1,
+					filterValue2
+				);
+			});
+
+			this.filteredData = data;
+		}
+
+		// Update record count
+		this.updateRecordCount(this.filteredData.length);
+	}
+
 	// Fullscreen Table Functions
 	toggleFullscreenTable() {
 		if (this.isFullscreen) {
@@ -2077,7 +2118,10 @@ class JSONVisualizer {
 			console.log("Filtered data length:", this.filteredData.length);
 			console.log("Visible columns:", this.visibleColumns);
 
-			// Force complete table rebuild
+			// Apply current filters before rebuilding table
+			this.applyCurrentFilters();
+
+			// Force complete table rebuild with current filter state
 			this.createTableHeader();
 			this.renderTableBody();
 
@@ -2134,7 +2178,8 @@ class JSONVisualizer {
 		// Restore body scroll
 		document.body.style.overflow = "";
 
-		// Re-render table to ensure data is visible in normal mode
+		// Re-apply current filters and re-render table to ensure data is visible in normal mode
+		this.applyCurrentFilters();
 		this.renderTableBody();
 
 		// Remove ESC key listener
