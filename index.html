@@ -319,19 +319,57 @@
 
 		<script src="script.js"></script>
 		<script>
+			// SOFORTIGER TEST
+			console.log("=== INLINE SCRIPT LÄUFT ===");
+			alert("TEST 1: JavaScript funktioniert!");
+			
 			// Debug-Script für iOS
-			console.log("JSON Visualizer loaded");
+			console.log("JSON Visualizer Script eingebunden");
 			
 			// iOS-spezifische Informationen loggen
 			if (navigator.userAgent.includes('iPad') || navigator.userAgent.includes('iPhone')) {
 				console.log("iOS device detected");
 				console.log("User Agent:", navigator.userAgent);
 				console.log("Memory:", navigator.deviceMemory || 'unknown');
+				alert("iOS Gerät erkannt: " + navigator.userAgent.substring(0, 50));
 			}
+			
+			// DOM Ready Test
+			document.addEventListener('DOMContentLoaded', function() {
+				console.log("=== DOM BEREIT ===");
+				alert("TEST 2: DOM ist geladen!");
+				
+				// Debug Button Test nach Delay
+				setTimeout(() => {
+					const debugBtn = document.getElementById('debugToggleBtn');
+					const fileInput = document.getElementById('fileInput');
+					const uploadArea = document.getElementById('uploadArea');
+					
+					console.log("Debug Button:", debugBtn ? "gefunden" : "NICHT GEFUNDEN");
+					console.log("File Input:", fileInput ? "gefunden" : "NICHT GEFUNDEN");
+					console.log("Upload Area:", uploadArea ? "gefunden" : "NICHT GEFUNDEN");
+					
+					if (debugBtn) {
+						alert("TEST 3: Debug Button gefunden!");
+						debugBtn.addEventListener('click', function() {
+							alert("Debug Button funktioniert!");
+						});
+					} else {
+						alert("FEHLER: Debug Button nicht gefunden!");
+					}
+				}, 2000);
+			});
 			
 			// Error-Listener für zusätzliches Debugging
 			window.addEventListener('error', function(e) {
 				console.error('Window Error:', e.error || e.message);
+				alert('JavaScript Fehler: ' + (e.message || 'Unbekannt'));
+			});
+			
+			// Promise Rejection Listener
+			window.addEventListener('unhandledrejection', function(e) {
+				console.error('Promise Rejection:', e.reason);
+				alert('Promise Fehler: ' + e.reason);
 			});
 		</script>
 	</body>
