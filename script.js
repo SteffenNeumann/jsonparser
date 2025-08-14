@@ -17,8 +17,6 @@ class JSONVisualizer {
 		this.lastMouseY = 0;
 		this.isFullscreen = false; // Track fullscreen state
 		this.currentTheme = localStorage.getItem("selectedTheme") || "light";
-		this.debugMessages = [];
-		this.debugConsoleVisible = false;
 		this.init();
 	}
 
@@ -27,172 +25,32 @@ class JSONVisualizer {
 		this.setupDragAndDrop();
 		this.setupThemeSelector();
 		this.applyTheme(this.currentTheme);
-		this.setupGlobalErrorHandling();
-		this.setupDebugConsole();
-	}
-
-	setupGlobalErrorHandling() {
-		// Global Error Handler für besseres Debugging
-		window.addEventListener("error", (event) => {
-			console.error("Global Error:", event.error);
-			console.error("Error details:", {
-				message: event.message,
-				filename: event.filename,
-				lineno: event.lineno,
-				colno: event.colno,
-			});
-		});
-
-		// Promise Rejection Handler
-		window.addEventListener("unhandledrejection", (event) => {
-			console.error("Unhandled Promise Rejection:", event.reason);
-		});
-	}
-
-	setupDebugConsole() {
-		// Debug Toggle Button
-		const debugToggleBtn = document.getElementById("debugToggleBtn");
-		const debugConsole = document.getElementById("debugConsole");
-		const clearDebugBtn = document.getElementById("clearDebugBtn");
-		const closeDebugBtn = document.getElementById("closeDebugBtn");
-
-		debugToggleBtn.addEventListener("click", () => {
-			this.toggleDebugConsole();
-		});
-
-		clearDebugBtn.addEventListener("click", () => {
-			this.clearDebugMessages();
-		});
-
-		closeDebugBtn.addEventListener("click", () => {
-			this.hideDebugConsole();
-		});
-
-		// Override console methods to capture messages
-		this.setupConsoleInterception();
-	}
-
-	setupConsoleInterception() {
-		const originalLog = console.log;
-		const originalWarn = console.warn;
-		const originalError = console.error;
-		const originalInfo = console.info;
-
-		console.log = (...args) => {
-			originalLog.apply(console, args);
-			this.addDebugMessage("log", args.join(" "));
-		};
-
-		console.warn = (...args) => {
-			originalWarn.apply(console, args);
-			this.addDebugMessage("warn", args.join(" "));
-		};
-
-		console.error = (...args) => {
-			originalError.apply(console, args);
-			this.addDebugMessage("error", args.join(" "));
-		};
-
-		console.info = (...args) => {
-			originalInfo.apply(console, args);
-			this.addDebugMessage("info", args.join(" "));
-		};
-	}
-
-	addDebugMessage(type, message) {
-		const timestamp = new Date().toLocaleTimeString();
-		const debugMessage = {
-			type,
-			message,
-			timestamp,
-		};
-
-		this.debugMessages.push(debugMessage);
-
-		// Begrenze die Anzahl der Nachrichten
-		if (this.debugMessages.length > 100) {
-			this.debugMessages.shift();
-		}
-
-		this.updateDebugConsole();
-	}
-
-	updateDebugConsole() {
-		const debugContent = document.getElementById("debugContent");
-		if (!debugContent) return;
-
-		debugContent.innerHTML = this.debugMessages
-			.map(
-				(msg) => `
-			<div class="debug-message debug-${msg.type}">
-				<span style="opacity: 0.7;">${msg.timestamp}</span> ${msg.message}
-			</div>
-		`
-			)
-			.join("");
-
-		// Scroll to bottom
-		debugContent.scrollTop = debugContent.scrollHeight;
-	}
-
-	toggleDebugConsole() {
-		const debugConsole = document.getElementById("debugConsole");
-		this.debugConsoleVisible = !this.debugConsoleVisible;
-		debugConsole.style.display = this.debugConsoleVisible ? "block" : "none";
-
-		if (this.debugConsoleVisible) {
-			this.addDebugMessage("info", "Debug Console aktiviert");
-		}
-	}
-
-	hideDebugConsole() {
-		const debugConsole = document.getElementById("debugConsole");
-		this.debugConsoleVisible = false;
-		debugConsole.style.display = "none";
-	}
-
-	clearDebugMessages() {
-		this.debugMessages = [];
-		this.updateDebugConsole();
-		this.addDebugMessage("info", "Debug Console geleert");
 	}
 
 	setupEventListeners() {
-		console.log("Setting up event listeners...");
-
 		// Vereinfachter File Input Event - nur für sichtbaren Input
 		const fileInput = document.getElementById("fileInput");
 		if (fileInput) {
-			console.log("File Input Event-Listener wird registriert");
-
 			fileInput.addEventListener("change", (e) => {
-				console.log("=== FILE INPUT CHANGE EVENT AUSGELÖST ===");
-				console.log("Event:", e);
-				console.log("Target:", e.target);
-				console.log("Files:", e.target.files);
-				console.log(
-					"Anzahl Dateien:",
-					e.target.files ? e.target.files.length : "keine"
-				);
-
 				if (e.target.files && e.target.files.length > 0) {
 					const file = e.target.files[0];
-					console.log("Ausgewählte Datei:", {
-						name: file.name,
-						size: file.size,
-						type: file.type,
-						lastModified: file.lastModified,
-					});
-
 					this.handleFileSelect(file);
-				} else {
-					console.warn("Keine Datei ausgewählt oder files array leer");
 				}
 			});
+		}
 
-			console.log("File Input Event-Listener erfolgreich registriert");
-		} else {
-			console.error("File Input Element nicht gefunden!");
+		// Upload Area Click - Vereinfacht für iOS
+		const uploadArea = document.getElementById("uploadArea");
+		if (uploadArea) {
+			uploadArea.addEventListener("click", (e) => {
+				// Nur triggern wenn nicht direkt auf File Input geklickt wurde
+				if (e.target !== fileInput) {
+					e.preventDefault();
+					if (fileInput) {
+						fileInput.click();
+					}
+				}
+			});
 		}
 
 		// Search Input Event
@@ -244,7 +102,6 @@ class JSONVisualizer {
 		document
 			.getElementById("columnManagerBtn")
 			.addEventListener("click", () => {
-				console.log("Column Manager Button clicked!");
 				this.toggleColumnManager();
 			});
 
@@ -252,7 +109,6 @@ class JSONVisualizer {
 		document
 			.getElementById("structureDiagramBtn")
 			.addEventListener("click", () => {
-				console.log("Structure Diagram Button clicked!");
 				this.toggleStructureDiagram();
 			});
 
@@ -335,23 +191,16 @@ class JSONVisualizer {
 			});
 
 		// Upload Area Click - Vereinfacht für iOS
-		const uploadArea = document.getElementById("uploadArea");
 		if (uploadArea) {
-			console.log("Upload Area Event-Listener wird registriert");
-
 			uploadArea.addEventListener("click", (e) => {
-				console.log("=== UPLOAD AREA GEKLICKT ===");
 				// Nur triggern wenn nicht direkt auf File Input geklickt wurde
 				if (e.target !== fileInput) {
 					e.preventDefault();
 					if (fileInput) {
-						console.log("Trigger File Input von Upload Area");
 						fileInput.click();
 					}
 				}
 			});
-		} else {
-			console.error("Upload Area Element nicht gefunden!");
 		}
 	}
 
@@ -400,37 +249,18 @@ class JSONVisualizer {
 	}
 
 	handleFileSelect(file) {
-		console.log("=== HANDLE FILE SELECT AUFGERUFEN ===");
-		console.log("File parameter:", file);
-
 		if (!file) {
-			console.error("Keine Datei übergeben!");
 			return;
 		}
 
-		console.log("Datei Details:", {
-			name: file.name,
-			size: file.size,
-			type: file.type,
-		});
-
 		if (!file.name.toLowerCase().endsWith(".json")) {
-			console.error("Datei ist keine JSON-Datei:", file.name);
 			this.showError("Bitte wählen Sie eine gültige JSON-Datei aus.");
 			return;
 		}
 
-		console.log("JSON-Datei erkannt, prüfe Größe...");
-
 		// Dateigrößenprüfung (10MB für mobile Geräte)
 		const maxFileSize = 10 * 1024 * 1024; // 10MB
 		if (file.size > maxFileSize) {
-			console.error(
-				"Datei zu groß:",
-				file.size,
-				"bytes, Maximum:",
-				maxFileSize
-			);
 			this.showError(
 				`Datei zu groß. Maximale Größe: ${Math.round(
 					maxFileSize / 1024 / 1024
@@ -439,34 +269,23 @@ class JSONVisualizer {
 			return;
 		}
 
-		console.log("Datei-Größe OK, starte FileReader...");
-
 		const reader = new FileReader();
 
 		reader.onload = (e) => {
-			console.log("FileReader: Datei vollständig geladen");
-
 			try {
-				console.log("Starte JSON-Parsing...");
 				const jsonData = JSON.parse(e.target.result);
-				console.log("JSON erfolgreich geparst");
-
 				this.processJSONData(jsonData, file.name);
 			} catch (error) {
-				console.error("JSON Parse Error:", error.message);
 				this.showError("Fehler beim Parsen der JSON-Datei: " + error.message);
 			}
 		};
 
 		reader.onerror = (e) => {
-			console.error("FileReader Error:", e);
 			this.showError("Fehler beim Lesen der Datei.");
 		};
 
-		console.log("Starte readAsText...");
 		reader.readAsText(file);
 	}
-
 	processJSONData(data, fileName) {
 		try {
 			console.log("Processing JSON data...", {

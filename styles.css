@@ -1858,30 +1858,32 @@ select:focus {
 	}
 }
 
-/* iOS-kompatibler File Input */
+/* iOS-kompatibler File Input - verbessert */
 .ios-file-input {
 	width: 100%;
 	max-width: 300px;
 	padding: 12px;
 	margin: 16px 0;
-	border: 2px dashed #0969da;
+	border: 2px solid var(--primary-orange);
 	border-radius: 8px;
-	background: #f8f9fa;
+	background: white;
 	font-size: 16px; /* Wichtig für iOS - verhindert Zoom */
-	color: #0969da;
+	color: var(--text-dark);
 	cursor: pointer;
 	transition: all 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ios-file-input:hover,
 .ios-file-input:focus {
-	border-color: #0550ae;
-	background: #e7f3ff;
+	border-color: var(--primary-orange-hover);
+	background: var(--primary-orange-light);
 	outline: none;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .ios-file-input::-webkit-file-upload-button {
-	background: #0969da;
+	background: var(--primary-orange);
 	color: white;
 	border: none;
 	padding: 8px 16px;
@@ -1889,10 +1891,12 @@ select:focus {
 	margin-right: 12px;
 	cursor: pointer;
 	font-size: 14px;
+	font-weight: 500;
+	transition: background-color 0.2s ease;
 }
 
 .ios-file-input::-webkit-file-upload-button:hover {
-	background: #0550ae;
+	background: var(--primary-orange-hover);
 }
 
 /* Verstecke den alternativen Button auf kleinen Bildschirmen */
