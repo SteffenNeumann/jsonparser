@@ -39,19 +39,18 @@ class JSONVisualizer {
 			});
 		}
 
-		// Upload Area Click - nur für Desktop mit verstecktem File Input
+		// Upload Area Click - Drag & Drop Area
 		const uploadArea = document.getElementById("uploadArea");
 		if (uploadArea) {
 			uploadArea.addEventListener("click", (e) => {
-				// Nur bei Klick auf die Upload-Area selbst, nicht auf Button oder File Input
+				// Nur bei Klick auf die Upload-Area selbst, nicht auf den Button
 				if (
 					e.target === uploadArea ||
 					e.target.tagName === "I" ||
 					e.target.tagName === "H3" ||
 					e.target.tagName === "P"
 				) {
-					// Nur auf Desktop triggern (wenn File Input versteckt ist)
-					if (fileInput && window.innerWidth > 768) {
+					if (fileInput) {
 						fileInput.click();
 					}
 				}
@@ -194,19 +193,6 @@ class JSONVisualizer {
 			.addEventListener("click", () => {
 				this.toggleColumnManager();
 			});
-
-		// Upload Area Click - Vereinfacht für iOS
-		if (uploadArea) {
-			uploadArea.addEventListener("click", (e) => {
-				// Nur triggern wenn nicht direkt auf File Input geklickt wurde
-				if (e.target !== fileInput) {
-					e.preventDefault();
-					if (fileInput) {
-						fileInput.click();
-					}
-				}
-			});
-		}
 	}
 
 	setupDragAndDrop() {
@@ -302,16 +288,7 @@ class JSONVisualizer {
 			document.getElementById("errorSection").style.display = "none";
 
 			// Speichere die ursprüngliche JSON-Struktur für das Diagramm
-			this.rawJsonData = data;
-
-			// iOS-spezifische Größenprüfung
-			const dataString = JSON.stringify(data);
-			if (dataString.length > 2 * 1024 * 1024) {
-				// 2MB String-Grenze für iOS
-				console.warn("Large dataset detected, limiting processing...");
-			}
-
-			// Konvertiere verschiedene JSON-Strukturen zu Array von Objekten
+			this.rawJsonData = data; // Konvertiere verschiedene JSON-Strukturen zu Array von Objekten
 			let processedData = [];
 
 			if (Array.isArray(data)) {
@@ -360,13 +337,6 @@ class JSONVisualizer {
 				return;
 			}
 
-			// iOS-spezifisch: Begrenze die Anzahl der verarbeiteten Items
-			const maxItems = 1000; // Limit für iOS
-			if (processedData.length > maxItems) {
-				console.warn(`Dataset zu groß für iOS, begrenzt auf ${maxItems} Items`);
-				processedData = processedData.slice(0, maxItems);
-			}
-
 			// Flatte verschachtelte Objekte mit Error-Handling
 			console.log("Flattening objects...");
 			processedData = processedData.map((item, index) => {
@@ -377,7 +347,6 @@ class JSONVisualizer {
 					return item; // Fallback: verwende original item
 				}
 			});
-
 			console.log("Data processing completed:", processedData.length, "items");
 
 			this.originalData = processedData;
@@ -512,8 +481,8 @@ class JSONVisualizer {
 	flattenObject(obj, prefix = "", depth = 0) {
 		const flattened = {};
 
-		// iOS-spezifisch: Begrenze Rekursionstiefe
-		const maxDepth = 5;
+		// Begrenze Rekursionstiefe
+		const maxDepth = 10;
 		if (depth > maxDepth) {
 			return { [prefix || "deep_object"]: "[Zu tief verschachtelt]" };
 		}
@@ -539,8 +508,8 @@ class JSONVisualizer {
 						flattened[newKey] = "[Konvertierungsfehler]";
 					}
 				} else if (Array.isArray(value)) {
-					// Arrays als Strings darstellen, aber kürzer für iOS
-					if (value.length > 10) {
+					// Arrays als Strings darstellen
+					if (value.length > 20) {
 						flattened[newKey] = `[Array mit ${value.length} Elementen]`;
 					} else {
 						try {
