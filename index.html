@@ -42,9 +42,17 @@
 					<p>
 						Ziehen Sie eine JSON-Datei hierher oder klicken Sie zum Auswählen
 					</p>
-					<input type="file" id="fileInput" accept=".json" hidden />
+
+					<!-- iOS-kompatible Lösung: Sichtbarer File Input als Button gestylt -->
+					<input
+						type="file"
+						id="fileInput"
+						accept=".json"
+						class="file-input-button" />
+
+					<!-- Fallback-Button für Desktop (versteckt auf Mobilgeräten) -->
 					<button
-						class="upload-btn"
+						class="upload-btn desktop-only"
 						onclick="document.getElementById('fileInput').click()">
 						<i class="fas fa-folder-open"></i> Datei auswählen
 					</button>

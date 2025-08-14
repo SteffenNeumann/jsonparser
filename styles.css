@@ -304,6 +304,81 @@ header.compact p {
 	background: var(--primary-orange-hover);
 }
 
+/* iOS-kompatibler File Input Button */
+.file-input-button {
+	background: var(--primary-orange);
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: inline-block;
+	font-family: inherit;
+	margin-top: 8px;
+	text-align: center;
+}
+
+.file-input-button:hover {
+	background: var(--primary-orange-hover);
+}
+
+.file-input-button:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+/* Style für den "Datei auswählen" Button des File Inputs */
+.file-input-button::-webkit-file-upload-button {
+	background: transparent;
+	color: white;
+	border: none;
+	padding: 4px 8px 4px 0;
+	margin: 0;
+	margin-right: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	font-family: inherit;
+}
+
+.file-input-button::-webkit-file-upload-button:hover {
+	background: transparent;
+}
+
+/* Icon für File Input Button */
+.file-input-button::before {
+	content: "📁 ";
+	margin-right: 4px;
+}
+
+/* Responsive Verhalten */
+@media (max-width: 768px) {
+	/* Auf mobilen Geräten: Zeige nur den File Input */
+	.desktop-only {
+		display: none !important;
+	}
+
+	.file-input-button {
+		display: inline-block;
+		width: auto;
+		min-width: 160px;
+	}
+}
+
+@media (min-width: 769px) {
+	/* Auf Desktop: Verstecke File Input, zeige Button */
+	.file-input-button {
+		display: none;
+	}
+
+	.desktop-only {
+		display: inline-flex;
+	}
+}
+
 /* Controls Section - Postman-Style erweiterte Filter */
 .controls-section {
 	background: var(--bg-white);

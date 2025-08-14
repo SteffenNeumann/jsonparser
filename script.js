@@ -39,18 +39,19 @@ class JSONVisualizer {
 			});
 		}
 
-		// Upload Area Click - Drag & Drop Area
+		// Upload Area Click - nur für Desktop mit verstecktem File Input
 		const uploadArea = document.getElementById("uploadArea");
 		if (uploadArea) {
 			uploadArea.addEventListener("click", (e) => {
-				// Nur bei Klick auf die Upload-Area selbst, nicht auf den Button
+				// Nur bei Klick auf die Upload-Area selbst, nicht auf Button oder File Input
 				if (
 					e.target === uploadArea ||
 					e.target.tagName === "I" ||
 					e.target.tagName === "H3" ||
 					e.target.tagName === "P"
 				) {
-					if (fileInput) {
+					// Nur auf Desktop triggern (wenn File Input versteckt ist)
+					if (fileInput && window.innerWidth > 768) {
 						fileInput.click();
 					}
 				}
