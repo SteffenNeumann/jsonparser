@@ -28,7 +28,7 @@ class JSONVisualizer {
 	}
 
 	setupEventListeners() {
-		// Vereinfachter File Input Event - nur für sichtbaren Input
+		// File Input Event
 		const fileInput = document.getElementById("fileInput");
 		if (fileInput) {
 			fileInput.addEventListener("change", (e) => {
@@ -39,13 +39,17 @@ class JSONVisualizer {
 			});
 		}
 
-		// Upload Area Click - Vereinfacht für iOS
+		// Upload Area Click - Drag & Drop Area
 		const uploadArea = document.getElementById("uploadArea");
 		if (uploadArea) {
 			uploadArea.addEventListener("click", (e) => {
-				// Nur triggern wenn nicht direkt auf File Input geklickt wurde
-				if (e.target !== fileInput) {
-					e.preventDefault();
+				// Nur bei Klick auf die Upload-Area selbst, nicht auf den Button
+				if (
+					e.target === uploadArea ||
+					e.target.tagName === "I" ||
+					e.target.tagName === "H3" ||
+					e.target.tagName === "P"
+				) {
 					if (fileInput) {
 						fileInput.click();
 					}
@@ -2211,40 +2215,23 @@ class JSONVisualizer {
 		if (themeSelect) {
 			themeSelect.value = theme;
 		}
-
-		console.log(`Theme applied: ${theme}`);
 	}
 }
 
-// SOFORTIGER TEST - Diese Zeile sollte sofort ausgeführt werden
-console.log("=== JSON VISUALIZER SCRIPT GELADEN ===");
-alert("JavaScript lädt - Debug Test"); // Temporärer Test
-
 // App initialisieren wenn DOM geladen ist
 document.addEventListener("DOMContentLoaded", () => {
-	console.log("=== DOM CONTENT LOADED ===");
-	alert("DOM geladen - initialisiere App"); // Temporärer Test
 	try {
 		const app = new JSONVisualizer();
-		console.log("=== JSON VISUALIZER INITIALISIERT ===");
-		alert("App erfolgreich initialisiert"); // Temporärer Test
 	} catch (error) {
-		console.error("=== FEHLER BEI INITIALISIERUNG ===", error);
-		alert("FEHLER: " + error.message); // Temporärer Test
+		console.error("Fehler bei Initialisierung:", error);
 	}
 });
 
 // Fallback: Initialisierung auch wenn DOM bereits geladen ist
-if (document.readyState === "loading") {
-	// DOM wird noch geladen, warte auf DOMContentLoaded
-	console.log("DOM wird noch geladen...");
-} else {
-	// DOM ist bereits geladen
-	console.log("DOM bereits geladen, initialisiere sofort...");
+if (document.readyState !== "loading") {
 	try {
 		const app = new JSONVisualizer();
-		console.log("=== JSON VISUALIZER SOFORT INITIALISIERT ===");
 	} catch (error) {
-		console.error("=== FEHLER BEI SOFORT-INITIALISIERUNG ===", error);
+		console.error("Fehler bei Sofort-Initialisierung:", error);
 	}
 }
