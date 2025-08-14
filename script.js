@@ -561,7 +561,7 @@ class JSONVisualizer {
 	// NEUE EINFACHE iOS-KOMPATIBLE FILE INPUT IMPLEMENTIERUNG
 	setupSimpleFileInputs() {
 		console.log("=== SETUP SIMPLE FILE INPUTS FÜR iOS ===");
-		
+
 		// Hauptsächlicher sichtbarer File Input
 		const fileInput = document.getElementById("fileInput");
 		if (fileInput) {
@@ -571,11 +571,13 @@ class JSONVisualizer {
 				this.handleFileInputChange(e);
 			});
 		}
-		
+
 		// Fallback versteckter File Input
 		const fileInputHidden = document.getElementById("fileInputHidden");
 		if (fileInputHidden) {
-			console.log("Versteckter File Input gefunden, registriere Event-Listener");
+			console.log(
+				"Versteckter File Input gefunden, registriere Event-Listener"
+			);
 			fileInputHidden.addEventListener("change", (e) => {
 				console.log("=== VERSTECKTER FILE INPUT CHANGE ===");
 				this.handleFileInputChange(e);
@@ -589,7 +591,7 @@ class JSONVisualizer {
 		console.log("Event target:", e.target.id);
 		console.log("Files array:", e.target.files);
 		console.log("Files length:", e.target.files ? e.target.files.length : 0);
-		
+
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			console.log("Datei gefunden:", file.name, file.size, "bytes");
