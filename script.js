@@ -160,10 +160,19 @@ class JSONVisualizer {
 	setupEventListeners() {
 		console.log("Setting up event listeners...");
 
-		// File Input Event mit Debug-Logging
+		// File Input Event mit iOS-spezifischen Verbesserungen
 		const fileInput = document.getElementById("fileInput");
 		if (fileInput) {
 			console.log("File Input Event-Listener wird registriert");
+			
+			// iOS Safari fix: Entferne hidden attribute
+			fileInput.removeAttribute('hidden');
+			fileInput.style.position = 'absolute';
+			fileInput.style.left = '-9999px';
+			fileInput.style.opacity = '0';
+			fileInput.style.width = '1px';
+			fileInput.style.height = '1px';
+			
 			fileInput.addEventListener("change", (e) => {
 				console.log("=== FILE INPUT CHANGE EVENT AUSGELÖST ===");
 				console.log("Event:", e);
@@ -182,32 +191,98 @@ class JSONVisualizer {
 						type: file.type,
 						lastModified: file.lastModified,
 					});
+					
+					// iOS Debug: Zusätzliche Dateipfad-Informationen
+					console.log("=== DATEIPFAD DEBUG ===");
+					console.log("File webkitRelativePath:", file.webkitRelativePath || "nicht verfügbar");
+					console.log("File.name vollständig:", file.name);
+					console.log("Input value:", e.target.value);
+					console.log("Input files length:", e.target.files.length);
+					
+					// Zeige alle verfügbaren File-Properties
+					console.log("Alle File-Properties:", Object.getOwnPropertyNames(file));
+					
 					this.handleFileSelect(file);
 				} else {
 					console.warn("Keine Datei ausgewählt oder files array leer");
+					console.log("Input value nach leerem Event:", e.target.value);
 				}
 			});
+			
+			// iOS Safari: Input Event als Fallback
+			fileInput.addEventListener("input", (e) => {
+				console.log("=== FILE INPUT INPUT EVENT (Fallback) ===");
+				if (e.target.files && e.target.files.length > 0) {
+					const file = e.target.files[0];
+					console.log("Datei über Input Event:", file.name);
+					this.handleFileSelect(file);
+				}
+			});
+			
 			console.log("File Input Event-Listener erfolgreich registriert");
+			
+			// iOS Debug: Überwache File Input Status kontinuierlich
+			this.startFileInputMonitoring(fileInput);
 		} else {
 			console.error("File Input Element nicht gefunden!");
 		}
 
-		// Upload Button Click Event mit Debug-Logging
+		// Upload Button Click Event mit iOS-Fixes
 		const uploadBtn = document.querySelector(".upload-btn");
 		if (uploadBtn) {
 			console.log("Upload Button Event-Listener wird registriert");
-			uploadBtn.addEventListener("click", () => {
+			uploadBtn.addEventListener("click", (e) => {
 				console.log("=== UPLOAD BUTTON GEKLICKT ===");
+				e.preventDefault(); // Verhindere Standard-Verhalten
+				
 				if (fileInput) {
-					console.log("File Input wird ausgelöst");
-					fileInput.click();
+					console.log("File Input wird ausgelöst (iOS-kompatibel)");
+					
+					// iOS Safari: Mehrere Trigger-Methoden
+					try {
+						// Methode 1: Standard click
+						fileInput.click();
+						console.log("Standard click() ausgeführt");
+						
+						// Methode 2: Trigger Event manuell
+						setTimeout(() => {
+							const clickEvent = new MouseEvent('click', {
+								bubbles: true,
+								cancelable: true,
+								view: window
+							});
+							fileInput.dispatchEvent(clickEvent);
+							console.log("Manual click event dispatched");
+						}, 100);
+						
+						// Methode 3: Focus + Enter simulation
+						setTimeout(() => {
+							fileInput.focus();
+							console.log("File input focused");
+						}, 200);
+						
+					} catch (error) {
+						console.error("Fehler beim File Input Trigger:", error);
+					}
 				} else {
 					console.error("File Input nicht verfügbar für Button-Klick");
+				}
+			});
+			
+			// iOS: Touch Events als Alternative
+			uploadBtn.addEventListener("touchend", (e) => {
+				console.log("=== UPLOAD BUTTON TOUCH END ===");
+				e.preventDefault();
+				if (fileInput) {
+					fileInput.click();
 				}
 			});
 		} else {
 			console.error("Upload Button nicht gefunden!");
 		}
+
+		// iOS Debug: Kontinuierliche Überwachung des File Input Status
+		this.startFileInputMonitoring();
 
 		// Search Input Event
 		document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -348,23 +423,124 @@ class JSONVisualizer {
 				this.toggleColumnManager();
 			});
 
-		// Upload Area Click mit Debug-Logging
+		// Upload Area Click mit iOS-spezifischen Fixes
 		const uploadArea = document.getElementById("uploadArea");
 		if (uploadArea) {
 			console.log("Upload Area Event-Listener wird registriert");
-			uploadArea.addEventListener("click", () => {
+			
+			uploadArea.addEventListener("click", (e) => {
 				console.log("=== UPLOAD AREA GEKLICKT ===");
+				e.preventDefault();
+				
 				const fileInput = document.getElementById("fileInput");
 				if (fileInput) {
-					console.log("Trigger File Input Click");
-					fileInput.click();
+					console.log("Trigger File Input Click (iOS-kompatibel)");
+					
+					try {
+						// iOS Safari: Direkte Interaktion erforderlich
+						fileInput.style.position = 'absolute';
+						fileInput.style.left = '0';
+						fileInput.style.top = '0';
+						fileInput.style.opacity = '0';
+						fileInput.style.width = '100%';
+						fileInput.style.height = '100%';
+						fileInput.style.cursor = 'pointer';
+						
+						// Setze Focus und triggere
+						fileInput.focus();
+						fileInput.click();
+						
+						console.log("iOS-spezifische File Input Trigger ausgeführt");
+						
+						// Reset nach kurzer Zeit
+						setTimeout(() => {
+							fileInput.style.position = 'absolute';
+							fileInput.style.left = '-9999px';
+							fileInput.style.width = '1px';
+							fileInput.style.height = '1px';
+						}, 1000);
+						
+					} catch (error) {
+						console.error("Fehler beim iOS File Input Trigger:", error);
+					}
 				} else {
 					console.error("File Input für Upload Area nicht gefunden!");
+				}
+			});
+			
+			// iOS: Touch Events
+			uploadArea.addEventListener("touchend", (e) => {
+				console.log("=== UPLOAD AREA TOUCH END ===");
+				e.preventDefault();
+				const fileInput = document.getElementById("fileInput");
+				if (fileInput) {
+					fileInput.click();
 				}
 			});
 		} else {
 			console.error("Upload Area Element nicht gefunden!");
 		}
+	}
+
+	// iOS Debug: Kontinuierliche Überwachung des File Input Status
+	startFileInputMonitoring() {
+		console.log("=== STARTE FILE INPUT MONITORING ===");
+		
+		const fileInput = document.getElementById("fileInput");
+		if (!fileInput) {
+			console.error("File Input für Monitoring nicht gefunden!");
+			return;
+		}
+		
+		let lastValue = fileInput.value;
+		let lastFilesLength = fileInput.files ? fileInput.files.length : 0;
+		let checkCount = 0;
+		
+		console.log("Initial File Input Status:", {
+			value: lastValue,
+			filesLength: lastFilesLength
+		});
+		
+		const monitorInterval = setInterval(() => {
+			checkCount++;
+			const currentValue = fileInput.value;
+			const currentFilesLength = fileInput.files ? fileInput.files.length : 0;
+			
+			// Log alle 10 Checks (alle 5 Sekunden)
+			if (checkCount % 10 === 0) {
+				console.log(`Monitoring Check #${checkCount}: value="${currentValue}", files=${currentFilesLength}`);
+			}
+			
+			// Prüfe auf Änderungen
+			if (currentValue !== lastValue || currentFilesLength !== lastFilesLength) {
+				console.log("=== FILE INPUT STATUS ÄNDERUNG ERKANNT ===");
+				console.log("Alter Wert:", lastValue, "→ Neuer Wert:", currentValue);
+				console.log("Alte Files-Anzahl:", lastFilesLength, "→ Neue Files-Anzahl:", currentFilesLength);
+				
+				if (currentFilesLength > 0 && fileInput.files[0]) {
+					const file = fileInput.files[0];
+					console.log("=== DATEI ÜBER POLLING ERKANNT ===");
+					console.log("Datei-Name:", file.name);
+					console.log("Datei-Größe:", file.size);
+					console.log("Datei-Typ:", file.type);
+					console.log("File Path (soweit verfügbar):", currentValue);
+					console.log("Rufe handleFileSelect über Polling auf...");
+					
+					// Stoppe das Monitoring und verarbeite die Datei
+					clearInterval(monitorInterval);
+					this.handleFileSelect(file);
+				}
+				
+				lastValue = currentValue;
+				lastFilesLength = currentFilesLength;
+			}
+		}, 500); // Prüfe alle 500ms
+		
+		// Stoppe das Monitoring nach 60 Sekunden
+		setTimeout(() => {
+			console.log("File Input Monitoring beendet nach 60 Sekunden");
+			clearInterval(monitorInterval);
+		}, 60000);
 	}
 
 	setupDragAndDrop() {
