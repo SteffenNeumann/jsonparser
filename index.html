@@ -295,5 +295,21 @@
 		</div>
 
 		<script src="script.js"></script>
+		<script>
+			// Debug-Script für iOS
+			console.log("JSON Visualizer loaded");
+			
+			// iOS-spezifische Informationen loggen
+			if (navigator.userAgent.includes('iPad') || navigator.userAgent.includes('iPhone')) {
+				console.log("iOS device detected");
+				console.log("User Agent:", navigator.userAgent);
+				console.log("Memory:", navigator.deviceMemory || 'unknown');
+			}
+			
+			// Error-Listener für zusätzliches Debugging
+			window.addEventListener('error', function(e) {
+				console.error('Window Error:', e.error || e.message);
+			});
+		</script>
 	</body>
 </html>

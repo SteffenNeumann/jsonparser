@@ -25,6 +25,25 @@ class JSONVisualizer {
 		this.setupDragAndDrop();
 		this.setupThemeSelector();
 		this.applyTheme(this.currentTheme);
+		this.setupGlobalErrorHandling();
+	}
+
+	setupGlobalErrorHandling() {
+		// Global Error Handler für besseres Debugging
+		window.addEventListener('error', (event) => {
+			console.error('Global Error:', event.error);
+			console.error('Error details:', {
+				message: event.message,
+				filename: event.filename,
+				lineno: event.lineno,
+				colno: event.colno
+			});
+		});
+
+		// Promise Rejection Handler
+		window.addEventListener('unhandledrejection', (event) => {
+			console.error('Unhandled Promise Rejection:', event.reason);
+		});
 	}
 
 	setupEventListeners() {
@@ -232,49 +251,75 @@ class JSONVisualizer {
 			return;
 		}
 
+		// iOS-spezifische Dateigrößenprüfung
+		const maxFileSize = 10 * 1024 * 1024; // 10MB für iOS
+		if (file.size > maxFileSize) {
+			this.showError(`Datei zu groß für mobile Geräte. Maximale Größe: ${Math.round(maxFileSize / 1024 / 1024)}MB`);
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			try {
+				console.log("Parsing JSON file...");
 				const jsonData = JSON.parse(e.target.result);
+				console.log("JSON parsed successfully, processing data...");
 				this.processJSONData(jsonData, file.name);
 			} catch (error) {
+				console.error("JSON Parse Error:", error);
 				this.showError("Fehler beim Parsen der JSON-Datei: " + error.message);
 			}
 		};
+		
+		reader.onerror = () => {
+			console.error("FileReader Error");
+			this.showError("Fehler beim Lesen der Datei.");
+		};
+		
 		reader.readAsText(file);
 	}
 
 	processJSONData(data, fileName) {
-		// Verstecke Error Section
-		document.getElementById("errorSection").style.display = "none";
+		try {
+			console.log("Processing JSON data...", { type: typeof data, isArray: Array.isArray(data) });
+			
+			// Verstecke Error Section
+			document.getElementById("errorSection").style.display = "none";
 
-		// Speichere die ursprüngliche JSON-Struktur für das Diagramm
-		this.rawJsonData = data;
+			// Speichere die ursprüngliche JSON-Struktur für das Diagramm
+			this.rawJsonData = data;
 
-		// Konvertiere verschiedene JSON-Strukturen zu Array von Objekten (ursprüngliche Logik)
-		let processedData = [];
+			// iOS-spezifische Größenprüfung
+			const dataString = JSON.stringify(data);
+			if (dataString.length > 2 * 1024 * 1024) { // 2MB String-Grenze für iOS
+				console.warn("Large dataset detected, limiting processing...");
+			}
 
-		if (Array.isArray(data)) {
-			processedData = data;
-		} else if (typeof data === "object" && data !== null) {
-			// Wenn es ein Objekt ist, schaue nach Array-Properties
-			const arrayKeys = Object.keys(data).filter((key) =>
-				Array.isArray(data[key])
-			);
+			// Konvertiere verschiedene JSON-Strukturen zu Array von Objekten
+			let processedData = [];
 
-			if (arrayKeys.length > 1) {
-				// Mehrere Arrays gefunden - kombiniere alle Arrays
-				console.log(`Mehrere Arrays gefunden: ${arrayKeys.join(", ")}`);
+			if (Array.isArray(data)) {
+				processedData = data;
+				console.log("Data is array with", data.length, "items");
+			} else if (typeof data === "object" && data !== null) {
+				// Wenn es ein Objekt ist, schaue nach Array-Properties
+				const arrayKeys = Object.keys(data).filter((key) =>
+					Array.isArray(data[key])
+				);
 
-				arrayKeys.forEach((key) => {
-					const arrayData = data[key];
-					// Füge Array-Namen als zusätzliche Spalte hinzu
-					const enrichedData = arrayData.map((item) => ({
-						...item,
-						_arraySource: key, // Markiere woher das Item kommt
-					}));
-					processedData = processedData.concat(enrichedData);
-				});
+				if (arrayKeys.length > 1) {
+					// Mehrere Arrays gefunden - kombiniere alle Arrays
+					console.log(`Mehrere Arrays gefunden: ${arrayKeys.join(", ")}`);
+
+					arrayKeys.forEach((key) => {
+						const arrayData = data[key];
+						// Füge Array-Namen als zusätzliche Spalte hinzu
+						const enrichedData = arrayData.map((item) => ({
+							...item,
+							_arraySource: key, // Markiere woher das Item kommt
+						}));
+						processedData = processedData.concat(enrichedData);
+					});
 			} else if (arrayKeys.length === 1) {
 				// Ein Array gefunden - verwende es
 				processedData = data[arrayKeys[0]];
@@ -299,8 +344,25 @@ class JSONVisualizer {
 			return;
 		}
 
-		// Flatte verschachtelte Objekte
-		processedData = processedData.map((item) => this.flattenObject(item));
+		// iOS-spezifisch: Begrenze die Anzahl der verarbeiteten Items
+		const maxItems = 1000; // Limit für iOS
+		if (processedData.length > maxItems) {
+			console.warn(`Dataset zu groß für iOS, begrenzt auf ${maxItems} Items`);
+			processedData = processedData.slice(0, maxItems);
+		}
+
+		// Flatte verschachtelte Objekte mit Error-Handling
+		console.log("Flattening objects...");
+		processedData = processedData.map((item, index) => {
+			try {
+				return this.flattenObject(item);
+			} catch (error) {
+				console.error(`Error flattening item ${index}:`, error);
+				return item; // Fallback: verwende original item
+			}
+		});
+
+		console.log("Data processing completed:", processedData.length, "items");
 
 		this.originalData = processedData;
 		this.filteredData = [...processedData];
@@ -308,6 +370,11 @@ class JSONVisualizer {
 		this.createTable(fileName);
 		this.showTableSection();
 		this.showLevelSelector(); // Zeige die Ebenen-Auswahl
+		
+		} catch (error) {
+			console.error("Error in processJSONData:", error);
+			this.showError("Fehler beim Verarbeiten der Daten: " + error.message);
+		}
 	}
 
 	// Neue Funktion: Extrahiert alle Ebenen des JSON rekursiv
@@ -427,8 +494,14 @@ class JSONVisualizer {
 		return result;
 	}
 
-	flattenObject(obj, prefix = "") {
+	flattenObject(obj, prefix = "", depth = 0) {
 		const flattened = {};
+		
+		// iOS-spezifisch: Begrenze Rekursionstiefe
+		const maxDepth = 5;
+		if (depth > maxDepth) {
+			return { [prefix || "deep_object"]: "[Zu tief verschachtelt]" };
+		}
 
 		for (const key in obj) {
 			if (obj.hasOwnProperty(key)) {
@@ -440,11 +513,24 @@ class JSONVisualizer {
 					typeof value === "object" &&
 					!Array.isArray(value)
 				) {
-					// Rekursiv für verschachtelte Objekte
-					Object.assign(flattened, this.flattenObject(value, newKey));
+					// Rekursiv für verschachtelte Objekte mit Tiefenbegrenzung
+					try {
+						Object.assign(flattened, this.flattenObject(value, newKey, depth + 1));
+					} catch (error) {
+						console.warn("Error flattening nested object:", error);
+						flattened[newKey] = "[Konvertierungsfehler]";
+					}
 				} else if (Array.isArray(value)) {
-					// Arrays als Strings darstellen
-					flattened[newKey] = JSON.stringify(value);
+					// Arrays als Strings darstellen, aber kürzer für iOS
+					if (value.length > 10) {
+						flattened[newKey] = `[Array mit ${value.length} Elementen]`;
+					} else {
+						try {
+							flattened[newKey] = JSON.stringify(value);
+						} catch (error) {
+							flattened[newKey] = `[Array mit ${value.length} Elementen]`;
+						}
+					}
 				} else {
 					flattened[newKey] = value;
 				}
@@ -455,17 +541,26 @@ class JSONVisualizer {
 	}
 
 	createTable(fileName) {
-		// Hole alle einzigartigen Spalten
-		const columns = [...new Set(this.originalData.flatMap(Object.keys))];
+		try {
+			console.log("Creating table for:", fileName);
+			
+			// Hole alle einzigartigen Spalten
+			const columns = [...new Set(this.originalData.flatMap(Object.keys))];
+			console.log("Found columns:", columns.length, columns);
 
-		// Initialisiere Spalten-Management
-		this.initializeColumns(columns);
+			if (columns.length === 0) {
+				this.showError("Keine Spalten in den Daten gefunden.");
+				return;
+			}
 
-		// Erstelle Header
-		this.createTableHeader();
+			// Initialisiere Spalten-Management
+			this.initializeColumns(columns);
 
-		// Erstelle Spalten-Filter Dropdown
-		this.populateColumnFilter(this.columnOrder);
+			// Erstelle Header
+			this.createTableHeader();
+
+			// Erstelle Spalten-Filter Dropdown
+			this.populateColumnFilter(this.columnOrder);
 
 		// Erstelle Tabellen-Body
 		this.renderTableBody();
@@ -473,9 +568,13 @@ class JSONVisualizer {
 		// Update Dashboard und Info
 		this.updateDashboard(columns);
 		this.updateTableInfo(fileName);
-	}
-
-	initializeColumns(columns) {
+		
+		console.log("Table created successfully");
+		} catch (error) {
+			console.error("Error in createTable:", error);
+			this.showError("Fehler beim Erstellen der Tabelle: " + error.message);
+		}
+	}	initializeColumns(columns) {
 		// Initialisiere visibleColumns und columnOrder beim ersten Laden
 		if (this.visibleColumns.length === 0) {
 			this.visibleColumns = [...columns];
