@@ -169,15 +169,18 @@ class JSONVisualizer {
 				console.log("Event:", e);
 				console.log("Target:", e.target);
 				console.log("Files:", e.target.files);
-				console.log("Anzahl Dateien:", e.target.files ? e.target.files.length : "keine");
-				
+				console.log(
+					"Anzahl Dateien:",
+					e.target.files ? e.target.files.length : "keine"
+				);
+
 				if (e.target.files && e.target.files.length > 0) {
 					const file = e.target.files[0];
 					console.log("Ausgewählte Datei:", {
 						name: file.name,
 						size: file.size,
 						type: file.type,
-						lastModified: file.lastModified
+						lastModified: file.lastModified,
 					});
 					this.handleFileSelect(file);
 				} else {
@@ -411,7 +414,7 @@ class JSONVisualizer {
 	handleFileSelect(file) {
 		console.log("=== HANDLE FILE SELECT AUFGERUFEN ===");
 		console.log("File parameter:", file);
-		
+
 		if (!file) {
 			console.error("Keine Datei übergeben!");
 			return;
@@ -420,7 +423,7 @@ class JSONVisualizer {
 		console.log("Datei Details:", {
 			name: file.name,
 			size: file.size,
-			type: file.type
+			type: file.type,
 		});
 
 		if (!file.name.toLowerCase().endsWith(".json")) {
@@ -434,7 +437,12 @@ class JSONVisualizer {
 		// iOS-spezifische Dateigrößenprüfung
 		const maxFileSize = 10 * 1024 * 1024; // 10MB für iOS
 		if (file.size > maxFileSize) {
-			console.error("Datei zu groß:", file.size, "bytes, Maximum:", maxFileSize);
+			console.error(
+				"Datei zu groß:",
+				file.size,
+				"bytes, Maximum:",
+				maxFileSize
+			);
 			this.showError(
 				`Datei zu groß für mobile Geräte. Maximale Größe: ${Math.round(
 					maxFileSize / 1024 / 1024
@@ -446,43 +454,49 @@ class JSONVisualizer {
 		console.log("Datei-Größe OK, starte FileReader...");
 
 		const reader = new FileReader();
-		
+
 		reader.onloadstart = () => {
 			console.log("FileReader: Laden gestartet");
 		};
-		
+
 		reader.onprogress = (e) => {
 			if (e.lengthComputable) {
 				const percent = (e.loaded / e.total) * 100;
 				console.log(`FileReader: ${percent.toFixed(1)}% geladen`);
 			}
 		};
-		
+
 		reader.onload = (e) => {
 			console.log("FileReader: Datei vollständig geladen");
-			console.log("Content length:", e.target.result ? e.target.result.length : 0);
-			
+			console.log(
+				"Content length:",
+				e.target.result ? e.target.result.length : 0
+			);
+
 			try {
 				console.log("Starte JSON-Parsing...");
 				const jsonData = JSON.parse(e.target.result);
 				console.log("JSON erfolgreich geparst, Datentyp:", typeof jsonData);
-				console.log("JSON Struktur:", Array.isArray(jsonData) ? "Array" : "Object");
+				console.log(
+					"JSON Struktur:",
+					Array.isArray(jsonData) ? "Array" : "Object"
+				);
 				if (Array.isArray(jsonData)) {
 					console.log("Array-Länge:", jsonData.length);
 				}
-				
+
 				console.log("Rufe processJSONData auf...");
 				this.processJSONData(jsonData, file.name);
 			} catch (error) {
 				console.error("JSON Parse Error Details:", {
 					name: error.name,
 					message: error.message,
-					stack: error.stack
+					stack: error.stack,
 				});
 				this.showError("Fehler beim Parsen der JSON-Datei: " + error.message);
 			}
 		};
-		
+
 		reader.onerror = (e) => {
 			console.error("FileReader Error Details:", e);
 			this.showError("Fehler beim Lesen der Datei.");
