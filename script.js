@@ -17,6 +17,8 @@ class JSONVisualizer {
 		this.lastMouseY = 0;
 		this.isFullscreen = false; // Track fullscreen state
 		this.currentTheme = localStorage.getItem("selectedTheme") || "light";
+		this.debugMessages = [];
+		this.debugConsoleVisible = false;
 		this.init();
 	}
 
@@ -26,6 +28,7 @@ class JSONVisualizer {
 		this.setupThemeSelector();
 		this.applyTheme(this.currentTheme);
 		this.setupGlobalErrorHandling();
+		this.setupDebugConsole();
 	}
 
 	setupGlobalErrorHandling() {
@@ -44,6 +47,110 @@ class JSONVisualizer {
 		window.addEventListener('unhandledrejection', (event) => {
 			console.error('Unhandled Promise Rejection:', event.reason);
 		});
+	}
+
+	setupDebugConsole() {
+		// Debug Toggle Button
+		const debugToggleBtn = document.getElementById('debugToggleBtn');
+		const debugConsole = document.getElementById('debugConsole');
+		const clearDebugBtn = document.getElementById('clearDebugBtn');
+		const closeDebugBtn = document.getElementById('closeDebugBtn');
+
+		debugToggleBtn.addEventListener('click', () => {
+			this.toggleDebugConsole();
+		});
+
+		clearDebugBtn.addEventListener('click', () => {
+			this.clearDebugMessages();
+		});
+
+		closeDebugBtn.addEventListener('click', () => {
+			this.hideDebugConsole();
+		});
+
+		// Override console methods to capture messages
+		this.setupConsoleInterception();
+	}
+
+	setupConsoleInterception() {
+		const originalLog = console.log;
+		const originalWarn = console.warn;
+		const originalError = console.error;
+		const originalInfo = console.info;
+
+		console.log = (...args) => {
+			originalLog.apply(console, args);
+			this.addDebugMessage('log', args.join(' '));
+		};
+
+		console.warn = (...args) => {
+			originalWarn.apply(console, args);
+			this.addDebugMessage('warn', args.join(' '));
+		};
+
+		console.error = (...args) => {
+			originalError.apply(console, args);
+			this.addDebugMessage('error', args.join(' '));
+		};
+
+		console.info = (...args) => {
+			originalInfo.apply(console, args);
+			this.addDebugMessage('info', args.join(' '));
+		};
+	}
+
+	addDebugMessage(type, message) {
+		const timestamp = new Date().toLocaleTimeString();
+		const debugMessage = {
+			type,
+			message,
+			timestamp
+		};
+
+		this.debugMessages.push(debugMessage);
+		
+		// Begrenze die Anzahl der Nachrichten
+		if (this.debugMessages.length > 100) {
+			this.debugMessages.shift();
+		}
+
+		this.updateDebugConsole();
+	}
+
+	updateDebugConsole() {
+		const debugContent = document.getElementById('debugContent');
+		if (!debugContent) return;
+
+		debugContent.innerHTML = this.debugMessages.map(msg => `
+			<div class="debug-message debug-${msg.type}">
+				<span style="opacity: 0.7;">${msg.timestamp}</span> ${msg.message}
+			</div>
+		`).join('');
+
+		// Scroll to bottom
+		debugContent.scrollTop = debugContent.scrollHeight;
+	}
+
+	toggleDebugConsole() {
+		const debugConsole = document.getElementById('debugConsole');
+		this.debugConsoleVisible = !this.debugConsoleVisible;
+		debugConsole.style.display = this.debugConsoleVisible ? 'block' : 'none';
+		
+		if (this.debugConsoleVisible) {
+			this.addDebugMessage('info', 'Debug Console aktiviert');
+		}
+	}
+
+	hideDebugConsole() {
+		const debugConsole = document.getElementById('debugConsole');
+		this.debugConsoleVisible = false;
+		debugConsole.style.display = 'none';
+	}
+
+	clearDebugMessages() {
+		this.debugMessages = [];
+		this.updateDebugConsole();
+		this.addDebugMessage('info', 'Debug Console geleert');
 	}
 
 	setupEventListeners() {

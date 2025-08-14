@@ -292,6 +292,29 @@
 					<p id="errorText"></p>
 				</div>
 			</div>
+
+			<!-- Debug Console für iOS -->
+			<div class="debug-console" id="debugConsole" style="display: none">
+				<div class="debug-header">
+					<h4><i class="fas fa-bug"></i> Debug Console</h4>
+					<button id="clearDebugBtn" class="btn-small btn-secondary">
+						<i class="fas fa-trash"></i> Löschen
+					</button>
+					<button id="closeDebugBtn" class="btn-small btn-danger">
+						<i class="fas fa-times"></i> Schließen
+					</button>
+				</div>
+				<div class="debug-content" id="debugContent">
+					<!-- Debug-Nachrichten werden hier angezeigt -->
+				</div>
+			</div>
+
+			<!-- Debug Toggle Button (immer sichtbar) -->
+			<div class="debug-toggle">
+				<button id="debugToggleBtn" class="btn-small btn-info" title="Debug Console ein/ausblenden">
+					<i class="fas fa-bug"></i>
+				</button>
+			</div>
 		</div>
 
 		<script src="script.js"></script>
